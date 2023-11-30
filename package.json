@@ -1,0 +1,32 @@
+{
+  "name": "lovem",
+  "version": "1.0.0",
+  "main": "node_modules/expo/AppEntry.js",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web"
+  },
+  "dependencies": {
+    "@expo-google-fonts/calistoga": "^0.2.3",
+    "@expo-google-fonts/comfortaa": "^0.2.3",
+    "@expo-google-fonts/inter": "^0.2.3",
+    "@react-native-community/slider": "4.4.2",
+    "@react-navigation/native": "^6.1.9",
+    "@react-navigation/stack": "^6.3.20",
+    "expo": "~49.0.15",
+    "expo-font": "~11.4.0",
+    "expo-linear-gradient": "~12.3.0",
+    "expo-splash-screen": "~0.20.5",
+    "expo-status-bar": "~1.6.0",
+    "react": "18.2.0",
+    "react-native": "0.72.6",
+    "react-native-app-intro-slider": "^4.0.4",
+    "react-native-reanimated": "~3.3.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.20.0"
+  },
+  "private": true
+}
