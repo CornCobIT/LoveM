@@ -1,19 +1,27 @@
-import React, { useCallback, useEffect, useState, useRef } from 'react';
-import { Text, View, Animated, StyleSheet, Image, Dimensions } from 'react-native';
-import Entypo from '@expo/vector-icons/Entypo';
-import * as SplashScreen from 'expo-splash-screen';
-import * as Font from 'expo-font';
+import React, { useCallback, useEffect, useState, useRef } from "react";
+import {
+  Text,
+  View,
+  Animated,
+  StyleSheet,
+  Image,
+  Dimensions,
+} from "react-native";
+import Entypo from "@expo/vector-icons/Entypo";
+import * as SplashScreen from "expo-splash-screen";
+import * as Font from "expo-font";
+import { STYLES } from "../theme/style";
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
 
-const { width } = Dimensions.get('window');
+const { width } = Dimensions.get("window");
 
-export default function Splash({navigation}) {
+export default function Splash({ navigation }) {
   const [appIsReady, setAppIsReady] = useState(false);
   const logoAnim = useRef(new Animated.Value(0)).current;
   const textAnim = useRef(new Animated.Value(0)).current;
- 
+
   useEffect(() => {
     async function prepare() {
       try {
@@ -21,7 +29,7 @@ export default function Splash({navigation}) {
         await Font.loadAsync(Entypo.font);
         // Artificially delay for two seconds to simulate a slow loading
         // experience. Please remove this if you copy and paste the code!
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        await new Promise((resolve) => setTimeout(resolve, 2000));
       } catch (e) {
         console.warn(e);
       } finally {
@@ -46,7 +54,7 @@ export default function Splash({navigation}) {
           duration: 2000,
           useNativeDriver: true,
         }),
-      ]).start(() => navigation.navigate('IntroSlider'));;
+      ]).start(() => navigation.navigate("IntroSlide"));
     }
   }, [appIsReady]);
 
@@ -67,10 +75,16 @@ export default function Splash({navigation}) {
 
   return (
     <View
-      style={{ flex: 1, alignItems: 'center', justifyContent: 'center', flexDirection: 'row' }}
-      onLayout={onLayoutRootView}>
+      style={{
+        flex: 1,
+        alignItems: "center",
+        justifyContent: "center",
+        flexDirection: "row",
+      }}
+      onLayout={onLayoutRootView}
+    >
       <Animated.Image
-        source={require('../assets/logo.png')}
+        source={require("../assets/logo.png")}
         style={[
           styles.logo,
           {
@@ -87,9 +101,10 @@ export default function Splash({navigation}) {
       />
       <Animated.Text
         style={[
-          styles.text,
+          STYLES.title,
           {
             opacity: textAnim,
+            paddingLeft: 10,
           },
         ]}
       >
@@ -102,16 +117,16 @@ export default function Splash({navigation}) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'white',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "white",
   },
   logo: {
     width: 100,
     height: 100,
   },
   text: {
-    fontSize: 28,
+    fontSize: 24,
     marginLeft: 15,
   },
 });

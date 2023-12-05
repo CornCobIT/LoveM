@@ -1,114 +1,112 @@
-import React, { useState } from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
-import AppIntroSlider from 'react-native-app-intro-slider';
-import { slides } from '../data/intro';
-import { FONTS } from '../theme/style';
-import Button from '../components/Button';
+import React, { useState, useRef, useCallback } from "react";
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+} from "react-native";
+import AppIntroSlider from "react-native-app-intro-slider";
+import { slides } from "../data/intro";
+import { COLORS, FONTS, STYLES } from "../theme/style";
+import Button from "../components/Button";
 
 const IntroSlider = ({ navigation }) => {
-  const [showRealApp, setShowRealApp] = useState(false);
+  const sliderRef = useRef(null);
+  const [isLastSlide, setIsLastSlide] = useState(false);
 
-  const renderItem = ({ item }) => (
-    <View style={styles.container}>
-      <Image source={{ uri: item.image }} style={styles.image} />
-      <Text style={styles.text}>{item.text}</Text>
-    </View>
-  );
+  const onSlideChange = (index) => {
+    if (index === slides.length - 1) {
+      setIsLastSlide(true);
+    } else {
+      setIsLastSlide(false);
+    }
+  };
 
   const onDone = () => {
     setShowRealApp(true);
   };
 
-  const renderNextButton = () => {
+  const renderItem = useCallback(({ item }) => {
     return (
-      <View style={styles.buttonCircle}>
-        <Text style={styles.buttonText}>Next</Text>
+      <View style={styles.container}>
+        <Image source={{ uri: item.image }} style={styles.image} />
+        <Text style={[STYLES.title, { paddingHorizontal: 10, paddingTop: 30 }]}>
+          {item.text}
+        </Text>
       </View>
     );
-  };
-
-  const renderDoneButton = () => {
-    return (
-      <TouchableOpacity style={styles.buttonCircle} onPress={onDone}>
-        <Text style={styles.buttonText}>Done</Text>
-      </TouchableOpacity>
-    );
-  };
-
-  const renderSkipButton = () => {
-    return (
-      <TouchableOpacity style={styles.buttonCircle} onPress={onDone}>
-        <Text style={styles.buttonText}>Skip</Text>
-      </TouchableOpacity>
-    );
-  };
-
-  if (showRealApp) {
-    return <Start />;
-  } else {
-    return (
+  }, []);
+  return (
+    <View style={{ flex: 1, backgroundColor: "#fff" }}>
+      <Text style={[STYLES.header, { paddingTop: 50 }]}>
+        Add the widget {"\n"} to your home screen
+      </Text>
       <View style={{ flex: 1 }}>
-        <Text style={styles.title}>Add the widget to your home screen</Text>
         <AppIntroSlider
           renderItem={renderItem}
           data={slides}
           onDone={onDone}
-          renderNextButton={renderNextButton}
-          renderDoneButton={renderDoneButton}
-          renderSkipButton={renderSkipButton}
           dotStyle={styles.dot}
+          onSlideChange={onSlideChange}
           activeDotStyle={styles.activeDot}
+          ref={sliderRef}
         />
-        <Button text='I`ve enabled the widget' onPress={onDone} /> 
       </View>
-    );
-  }
+      <View style={{ marginHorizontal: 10, marginBottom: 20 }}>
+        <Button
+          text="I've enabled the widget"
+          handlePress={() => navigation.navigate("HomeScreen")}
+          backgroundColor={isLastSlide ? COLORS.logo : COLORS.gray}
+          color={isLastSlide ? COLORS.black : COLORS.darkGray}
+        />
+      </View>
+    </View>
+  );
 };
 
 export default IntroSlider;
 
-const styles=StyleSheet.create({
+const styles = StyleSheet.create({
+  title: {
+    fontFamily: FONTS.title,
+    fontSize: 24,
+    color: "#000",
+    fontWeight: "bold",
+    marginVertical: 20,
+    textAlign: "center",
+  },
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'white',
-  },
-  title: {
-    fontFamily: FONTS.normal,
-    fontSize: 24,
-    color: '#000',
-    fontWeight: 'bold',
-    position: 'absolute',
-    top: 100,
-    alignSelf: 'center',
-    textAlign: 'center',
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "white",
   },
   image: {
     width: 200,
-    height: 300,
+    height: 310,
+    borderRadius: 20,
   },
   text: {
     fontFamily: FONTS.normal,
     fontSize: 20,
-    color: '#000',
-    textAlign: 'center',
+    color: "#000",
+    textAlign: "center",
   },
   dot: {
-    backgroundColor: 'rgba(0, 0, 0, .2)',
+    backgroundColor: "rgba(0, 0, 0, .2)",
   },
   activeDot: {
-    backgroundColor: '#000',
+    backgroundColor: COLORS.darkGray,
   },
   buttonCircle: {
     width: 60,
     height: 40,
-    backgroundColor: 'rgba(0, 0, 0, .2)',
+    backgroundColor: "rgba(0, 0, 0, .2)",
     borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   buttonText: {
-    color: '#000',
+    color: "#000",
   },
 });

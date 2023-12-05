@@ -1,16 +1,12 @@
-import { StyleSheet, Text, View } from 'react-native'
-import React, {Component} from 'react'
-
+import React from 'react';
 import { useFonts } from 'expo-font';
-
-import Start from './navigation/StartStack'
+import Start from './navigation/StartStack';
 import Loading from './screens/Loading';
 
 const fetchFonts = {
-    'Title': require('./assets/fonts/Title.ttf'),
-    'Normal': require('./assets/fonts/Normal.ttf'),
-  };
-
+  'Playfair': require('./assets/fonts/PlayfairDisplay.ttf'),
+  'Sacramento': require('./assets/fonts/Sacramento.ttf'),
+};
 
 const App = () => {
   const [isLoaded] = useFonts(fetchFonts);
@@ -25,16 +21,5 @@ const App = () => {
     );
   }
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  text: {
-    fontSize: 24,
-  },
-});
 
 export default App;

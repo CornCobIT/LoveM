@@ -1,10 +1,10 @@
-import React, { useEffect, useState, useRef } from "react";
-import { Animated, StyleSheet, Image } from "react-native";
+import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 
 import SplashScreen from "../screens/SplashScreen";
-import IntroSlideScreen from "../screens/IntroSlider"; // Import your IntroSlideScreen
+import IntroSlideScreen from "../screens/IntroSlider";
+import HomeScreen from "../screens/Home";
 
 const Stack = createStackNavigator();
 
@@ -16,22 +16,19 @@ export default function Start() {
         <Stack.Screen
           name="SplashScreen"
           component={SplashScreen}
-          // Hiding header for Splash Screen
           options={{ headerShown: false }}
         />
         <Stack.Screen
-          name="IntroSlider"
+          name="IntroSlide"
           component={IntroSlideScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="HomeScreen"
+          component={HomeScreen}
           options={{ headerShown: false }}
         />
       </Stack.Navigator>
     </NavigationContainer>
   );
 }
-
-const styles = StyleSheet.create({
-  logo: {
-    width: 100,
-    height: 100,
-  },
-});
