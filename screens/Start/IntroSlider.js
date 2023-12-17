@@ -6,9 +6,9 @@ import {
   StyleSheet,
 } from "react-native";
 import AppIntroSlider from "react-native-app-intro-slider";
-import { slides } from "../data/intro";
-import { COLORS, FONTS, STYLES } from "../theme/style";
-import Button from "../components/Button";
+import { slides } from "../../data/intro";
+import { COLORS, FONTS, STYLES } from "../../theme/style";
+import Button from "../../components/Button";
 
 const IntroSlider = ({ navigation }) => {
   const sliderRef = useRef(null);

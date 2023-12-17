@@ -10,7 +10,7 @@ import {
 import Entypo from "@expo/vector-icons/Entypo";
 import * as SplashScreen from "expo-splash-screen";
 import * as Font from "expo-font";
-import { STYLES } from "../theme/style";
+import { STYLES } from "../../theme/style";
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
@@ -84,7 +84,7 @@ export default function Splash({ navigation }) {
       onLayout={onLayoutRootView}
     >
       <Animated.Image
-        source={require("../assets/logo.png")}
+        source={require("../../assets/logo.png")}
         style={[
           styles.logo,
           {

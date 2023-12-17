@@ -5,6 +5,7 @@ const COLORS = {
   highlight: "#192b11",
   gray: "#A9A9A9",
   darkGray: "#696969",
+  red: "#FF0000",
 };
 
 const FONTS = {
@@ -34,6 +35,18 @@ const STYLES = {
     fontFamily: FONTS.playfair,
     fontSize: 16,
   },
+  center: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: "center",
+  },
+  textInput: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 50,
+    height: 60,
+    paddingHorizontal: 10,
+  }
 };
 
 export { COLORS, FONTS, STYLES };

@@ -2,30 +2,29 @@ import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 
-import SplashScreen from "../screens/SplashScreen";
-import IntroSlideScreen from "../screens/IntroSlider";
-import HomeScreen from "../screens/Home";
+import HomeScreen from "../screens/CameraScreen/Home";
+import StartNavigator from "../navigation/StartNavigator";
+import ProfileNavigator from "../navigation/ProfileNavigator";
 
 const Stack = createStackNavigator();
 
-export default function Start() {
+export default function HomeNavigator() {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="SplashScreen">
-        {/* SplashScreen which will come once for 5 Seconds */}
+      <Stack.Navigator initialRouteName="StartNavigator">
         <Stack.Screen
-          name="SplashScreen"
-          component={SplashScreen}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="IntroSlide"
-          component={IntroSlideScreen}
+          name="StartNavigator"
+          component={StartNavigator}
           options={{ headerShown: false }}
         />
         <Stack.Screen
           name="HomeScreen"
           component={HomeScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="ProfileScreen"
+          component={ProfileNavigator}
           options={{ headerShown: false }}
         />
       </Stack.Navigator>
