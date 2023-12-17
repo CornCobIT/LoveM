@@ -17,6 +17,7 @@ const IntroSlider = ({ navigation }) => {
 
   const onDone = () => {
     setShowRealApp(true);
+    navigation.navigate('ChooseScreen');
   };
 
   const renderNextButton = () => {
