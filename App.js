@@ -1,5 +1,8 @@
-import React from 'react';
+import React, {useState} from 'react';
 import { useFonts } from 'expo-font';
+import { Camera } from 'expo-camera';
+import * as Contacts from 'expo-contacts';
+
 import Loading from './screens/Loading';
 import MainNavigator from './navigation/MainNavigator';
 
@@ -10,12 +13,21 @@ const fetchFonts = {
 
 const App = () => {
   const [isLoaded] = useFonts(fetchFonts);
+  async function getPermissions() {
+    const { status: cameraStatus } = await Camera.requestPermissionsAsync();
+    const { status: contactsStatus } = await Contacts.requestPermissionsAsync();
+    if (cameraStatus !== 'granted' || contactsStatus !== 'granted') {
+      alert(`We're very sorry 🥲`);
+    }
+  }
+
   if (!isLoaded) {
     return (
       <Loading />
     );
   } else {
     return (
+      
       <MainNavigator />
     );
   }
