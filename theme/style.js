@@ -5,7 +5,8 @@ const COLORS = {
   highlight: "#192b11",
   gray: "#A9A9A9",
   darkGray: "#696969",
-  red: "#FF0000",
+  red: "#FF0000", 
+    green: '#455e14',  
 };
 
 const FONTS = {
