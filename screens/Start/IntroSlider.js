@@ -55,7 +55,7 @@ const IntroSlider = ({ navigation }) => {
       <View style={{ marginHorizontal: 10, marginBottom: 20 }}>
         <Button
           text="I've enabled the widget"
-          handlePress={() => navigation.navigate("HomeScreen")}
+          handlePress={() => navigation.navigate("Auth")}
           backgroundColor={isLastSlide ? COLORS.logo : COLORS.gray}
           color={isLastSlide ? COLORS.black : COLORS.darkGray}
         />
