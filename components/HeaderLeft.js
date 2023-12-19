@@ -6,7 +6,7 @@ import { COLORS } from "../theme/style";
 
 const HeaderLeft = ({ icon, name, handlePress }) => {
   return (
-    <View >
+    <View style={styles.headerContainer}>
       <TouchableOpacity style={styles.headerButton} onPress={handlePress}>
         <Icon name={icon} size={27} style={styles.icon} />
         <Text style={styles.title}>{name}</Text>
@@ -18,18 +18,22 @@ const HeaderLeft = ({ icon, name, handlePress }) => {
 export default HeaderLeft;
 
 const styles = StyleSheet.create({
+  headerContainer: {
+    paddingVertical: 12,
+    backgroundColor: COLORS.lightBlack,
+  },
   headerButton: {
     width: "auto",
     alignItems: "center",
     flexDirection: "row",
-    paddingBottom: 10,
   },
   icon: {
-    color: COLORS.black,
+    color: COLORS.white,
     paddingHorizontal: 20,
   },
   title: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: "bold",
+    color: COLORS.white,
   },
 });

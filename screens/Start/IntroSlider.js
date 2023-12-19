@@ -1,47 +1,37 @@
 import React, { useState, useRef, useCallback } from "react";
-import {
-  View,
-  Text,
-  Image,
-  StyleSheet,
-} from "react-native";
+import { View, Text, Image, StyleSheet } from "react-native";
 import AppIntroSlider from "react-native-app-intro-slider";
+import { useNavigation } from "@react-navigation/native";
+
 import { slides } from "../../data/intro";
 import { COLORS, FONTS, STYLES } from "../../theme/style";
 import Button from "../../components/Button";
 
-const IntroSlider = ({ navigation }) => {
+const IntroSlider = () => {
+  const navigation = useNavigation();
   const sliderRef = useRef(null);
   const [isLastSlide, setIsLastSlide] = useState(false);
 
-  const onSlideChange = (index) => {
-    if (index === slides.length - 1) {
-      setIsLastSlide(true);
-    } else {
-      setIsLastSlide(false);
-    }
-  };
+  const onSlideChange = useCallback((index) => {
+    setIsLastSlide(index === slides.length - 1);
+  }, []);
 
-  const onDone = () => {
-    setShowRealApp(true);
-  };
+  const onDone = useCallback(() => {
+    navigation.navigate("Auth");
+  }, [navigation]);
 
   const renderItem = useCallback(({ item }) => {
     return (
-      <View style={styles.container}>
-        <Image source={{ uri: item.image }} style={styles.image} />
-        <Text style={[STYLES.title, { paddingHorizontal: 10, paddingTop: 30 }]}>
-          {item.text}
-        </Text>
-      </View>
+      <SlideItem item={item} />
     );
   }, []);
+
   return (
-    <View style={{ flex: 1, backgroundColor: "#fff" }}>
-      <Text style={[STYLES.header, { paddingTop: 50 }]}>
+    <View style={styles.container}>
+      <Text style={[STYLES.header, styles.header]}>
         Add the widget {"\n"} to your home screen
       </Text>
-      <View style={{ flex: 1 }}>
+      <View style={styles.sliderContainer}>
         <AppIntroSlider
           renderItem={renderItem}
           data={slides}
@@ -52,7 +42,7 @@ const IntroSlider = ({ navigation }) => {
           ref={sliderRef}
         />
       </View>
-      <View style={{ marginHorizontal: 10, marginBottom: 20 }}>
+      <View style={styles.buttonContainer}>
         <Button
           text="I've enabled the widget"
           handlePress={() => navigation.navigate("Auth")}
@@ -64,49 +54,56 @@ const IntroSlider = ({ navigation }) => {
   );
 };
 
-export default IntroSlider;
+const SlideItem = ({ item }) => {
+  return (
+    <View style={styles.slideItemContainer}>
+      <Image source={{ uri: item.image }} style={styles.image} />
+      <Text style={[STYLES.title, styles.title]}>{item.text}</Text>
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
-  title: {
-    fontFamily: FONTS.title,
-    fontSize: 24,
-    color: "#000",
-    fontWeight: "bold",
-    marginVertical: 20,
-    textAlign: "center",
-  },
   container: {
+    flex: 1,
+    backgroundColor: COLORS.lightBlack,
+  },
+  header: {
+    paddingTop: 50,
+  },
+  sliderContainer: {
+    flex: 1,
+    backgroundColor: COLORS.lightBlack,
+  },
+  buttonContainer: {
+    marginHorizontal: 10,
+    marginBottom: 20,
+  },
+  slideItemContainer: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "white",
+    backgroundColor: COLORS.lightBlack,
   },
   image: {
     width: 200,
     height: 310,
     borderRadius: 20,
   },
-  text: {
-    fontFamily: FONTS.normal,
+  title: {
+    fontFamily: FONTS.title,
     fontSize: 20,
-    color: "#000",
+    color: COLORS.white,
+    fontWeight: "bold",
+    marginVertical: 20,
     textAlign: "center",
   },
   dot: {
-    backgroundColor: "rgba(0, 0, 0, .2)",
+    backgroundColor: COLORS.gray,
   },
   activeDot: {
-    backgroundColor: COLORS.darkGray,
-  },
-  buttonCircle: {
-    width: 60,
-    height: 40,
-    backgroundColor: "rgba(0, 0, 0, .2)",
-    borderRadius: 20,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  buttonText: {
-    color: "#000",
+    backgroundColor: COLORS.white,
   },
 });
+
+export default IntroSlider;

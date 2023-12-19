@@ -74,6 +74,7 @@ export default function ProfileHeader({ navigation }) {
     <View style={STYLES.container}>
       <HeaderLeft
         icon={"arrow-back"}
+        name={"Profile"}
         handlePress={()=> navigation.goBack()}
       />
       <View style={styles.profile}>
@@ -89,11 +90,9 @@ export default function ProfileHeader({ navigation }) {
           />
           <View style={styles.iconContainer}>
             <TouchableOpacity style={styles.iconBg} onPress={onAddPress}>
-              <Icon
+              <Image
                 style={styles.buttonIcon}
-                name="add"
-                size={24}
-                color={COLORS.white}
+                source={require('../../../assets/icons/plus.png')}
               />
             </TouchableOpacity>
           </View>
@@ -113,19 +112,19 @@ export default function ProfileHeader({ navigation }) {
 
 const styles = StyleSheet.create({
   profile: {
-    padding: 10,
+    padding: 20,
     flexDirection: "column",
     alignItems: "center",
     backgroundColor: "#fff",
     borderTopWidth: 1,
     borderBottomWidth: 1,
     borderColor: "#e3e3e3",
+    backgroundColor: COLORS.lightBlack,
   },
   profileOutline: {
-    borderColor: COLORS.gray,
+    borderColor: COLORS.darkGray,
     borderWidth: 3,
     borderRadius: 9999,
-    marginTop: 30,
   },
   profileAvatar: {
     width: 100,
@@ -137,7 +136,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
     fontSize: 20,
     fontWeight: "600",
-    color: "#090909",
+    color: COLORS.white,
   },
   profileEmail: {
     marginTop: 6,
@@ -152,7 +151,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#007bff",
+    backgroundColor: COLORS.darkGray,
     borderRadius: 20,
   },
   profileActionText: {
@@ -173,7 +172,11 @@ const styles = StyleSheet.create({
     width: 37,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.lightBlack,
+  },
+  buttonIcon: {
+    height: 12,
+    width: 12,
   },
   iconBg: {
     backgroundColor: COLORS.logo,

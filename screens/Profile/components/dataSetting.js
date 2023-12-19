@@ -14,7 +14,7 @@ const SECTIONS = [
         label: "Widget Tutorial",
         type: "link",
       },
-      { id: "darkMode", icon: "moon", label: "Dark Mode", type: "toggle" },
+      // { id: "darkMode", icon: "moon", label: "Dark Mode", type: "toggle" },
     ],
   },
   {

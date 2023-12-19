@@ -7,6 +7,7 @@ import {
   StatusBar,
   ActivityIndicator,
   Alert,
+  FlatList,
 } from "react-native";
 import React, { useState, useRef, useEffect } from "react";
 import { Camera, CameraType } from "expo-camera";
@@ -18,15 +19,21 @@ import { useNavigation } from "@react-navigation/native";
 import { COLORS, STYLES } from "../../theme/style";
 
 export default function HomeScreen() {
-  const navigation = useNavigation();
+  const [friendList, setFriendList] = useState([
+    { id: "1", name: "Alice" },
+    { id: "2", name: "Bob" },
+    { id: "3", name: "Charlie" },
+    // Thêm các thông tin bạn bè khác nếu cần
+  ]);
 
+  const navigation = useNavigation();
   const [isLoading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
-
   const [showFriendList, setShowFriendList] = useState(false);
   const [hasCameraPermission, setHasCameraPermission] = useState(null);
   const [hasGalleryPermission, setHasGalleryPermission] = useState(null);
   const [image, setImage] = useState(null);
+  const [caption, setCaption] = useState("");
   const [type, setType] = useState(Camera.Constants.Type.back);
   const [flash, setFlash] = useState(Camera.Constants.FlashMode.off);
   const [ratio, setRatio] = useState("1:1");
@@ -87,30 +94,40 @@ export default function HomeScreen() {
       setLoading(true);
       try {
         const filename = `image-${Date.now()}`;
-  
-        const blob = await new Promise((resolve, reject) => {
-          const xhr = new XMLHttpRequest();
-          xhr.onload = () => {
-            resolve(xhr.response);
-          };
-          xhr.onerror = function (e) {
-            console.log(e);
-            reject(new TypeError("Network request failed"));
-          };
-          xhr.responseType = "blob";
-          xhr.open("GET", image, true);
-          xhr.send(null);
-        });
-  
+        const blob = await response.blob();
+        // const blob = await new Promise((resolve, reject) => {
+        //   const xhr = new XMLHttpRequest();
+        //   xhr.onload = () => {
+        //     resolve(xhr.response);
+        //   };
+        //   xhr.onerror = function (e) {
+        //     console.log(e);
+        //     reject(new TypeError("Network request failed"));
+        //   };
+        //   xhr.responseType = "blob";
+        //   xhr.open("GET", image, true);
+        //   xhr.send(null);
+        // });
+
+        const metadata = {
+          contentType: "image/jpeg",
+          customMetadata: {
+            userId: userId,
+            timestamp: Date.now().toString(),
+            caption: caption, // Đính kèm caption vào metadata
+          },
+        };
+
         const ref = firebase
           .storage()
           .ref()
           .child(`images/` + filename);
-        await ref.put(blob);
-  
+        await ref.put(blob, metadata);
+
         setUploading(false);
         Alert.alert("Image uploaded successfully! 🎉");
         setImage(null);
+        setCaption("");
       } catch (e) {
         console.log(`Error upload image: ${e}`);
         alert("Failed to upload image!");
@@ -120,7 +137,6 @@ export default function HomeScreen() {
       }
     }
   };
-  
 
   const flipCamera = () => {
     setType(
@@ -130,7 +146,7 @@ export default function HomeScreen() {
     );
   };
 
-  if (hasCameraPermission === false || hasCameraPermission === '') {
+  if (hasCameraPermission === false || hasCameraPermission === "") {
     return (
       <View style={STYLES.center}>
         <Text style={STYLES.title}>No access to camera 🥲</Text>;
@@ -141,21 +157,32 @@ export default function HomeScreen() {
   return (
     <>
       <StatusBar></StatusBar>
-      <View style={[STYLES.container, { backgroundColor: COLORS.darkGray }]}>
+      <View
+        style={[
+          STYLES.container,
+          { justifyContent: "center", position: "relative" },
+        ]}
+      >
         <View style={{ alignItems: "center", marginTop: 30 }}>
           <View style={styles.header}>
-            <View style={styles.iconContainer}>
+            <TouchableOpacity
+              style={styles.iconContainer}
+              onPress={() => navigation.navigate("FriendList")}
+            >
               <Icon style={styles.icon} name="people" size={27} />
-            </View>
+            </TouchableOpacity>
 
             <TouchableOpacity
               onPress={toggleFriendList}
               style={styles.toggleButton}
             >
-              <Text style={styles.buttonText}>Friends</Text>
+              <Text style={STYLES.title}>Friends</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.iconContainer} onPress={() => navigation.navigate("ProfileScreen")} >
+            <TouchableOpacity
+              style={styles.iconContainer}
+              onPress={() => navigation.navigate("ProfileScreen")}
+            >
               <Icon
                 style={styles.icon}
                 name="person-circle-outline"
@@ -164,11 +191,26 @@ export default function HomeScreen() {
             </TouchableOpacity>
           </View>
           {showFriendList && (
-            <View style={styles.friendListContainer}>
-              {/* Đây là nơi bạn sẽ hiển thị danh sách bạn bè */}
-              <Text>List of Friends</Text>
-              {/* ... */}
-            </View>
+            <FlatList
+              data={friendList}
+              renderItem={({ item }) => (
+                <View style={styles.friendListContainer}>
+                  <Text style={styles.buttonText}>{item.name}</Text>
+                </View>
+              )}
+              keyExtractor={(item) => item.id}
+              style={{
+                position: "absolute",
+                top: 75,
+                zIndex: 1,
+                maxHeight: 300,
+                width: 220,
+                backgroundColor: COLORS.darkGray,
+                borderRadius: 10,
+                padding: 5,
+                elevation: 5,
+              }}
+            />
           )}
 
           {!image ? (
@@ -186,15 +228,32 @@ export default function HomeScreen() {
             <ActivityIndicator size="large" color={COLORS.logo} />
           ) : (
             // Hiển thị hình
-            <Image
-              source={{ uri: image }}
-              style={[
-                styles.cameraFrame,
-                type === Camera.Constants.Type.front && {
-                  transform: [{ scaleX: -1 }],
-                },
-              ]}
-            />
+
+            <View style={styles.postContainer}>
+              <Image
+                source={{ uri: image }}
+                style={[
+                  styles.postImage,
+                  styles.cameraFrame,
+                  type === Camera.Constants.Type.front && {
+                    transform: [{ scaleX: -1 }],
+                  },
+                ]}
+              />
+              <View style={styles.captionContainer}>
+                <TextInput
+                  style={styles.caption}
+                  placeholder="Add a caption"
+                  onChangeText={(text) => {
+                    if (text.length <= 27) {
+                      setCaption(text);
+                    }
+                  }}
+                  value={caption}
+                  maxLength={27}
+                />
+              </View>
+            </View>
           )}
 
           {!image ? (
@@ -280,7 +339,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 25,
-    backgroundColor: "#A2A0A0",
+    backgroundColor: COLORS.darkGray,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -288,34 +347,58 @@ const styles = StyleSheet.create({
     color: "white",
   },
   toggleButton: {
-    backgroundColor: "#2E2E2E",
-    paddingHorizontal: 20,
+    backgroundColor: COLORS.darkGray,
+    paddingHorizontal: 30,
     paddingVertical: 10,
     borderRadius: 8,
   },
   buttonText: {
     color: "white",
     fontWeight: "bold",
+    fontSize: 16,
   },
   friendListContainer: {
-    backgroundColor: "lightgrey",
-    padding: 20,
-    marginTop: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
   },
   cameraFrame: {
     width: 350,
     height: 350,
-    borderWidth: 2,
-    borderColor: "white",
     marginTop: 20,
     borderRadius: 40,
+    borderWidth: 3,
+    borderColor: COLORS.white,
+    overflow: "hidden",
+    marginTop: 20,
   },
   cameraImage: {
     width: "100%",
     height: "100%",
     resizeMode: "cover",
     position: "absolute",
-    borderRadius: 40,
+  },
+  postContainer: {
+    alignItems: "center",
+    position: "relative",
+  },
+  postImage: {
+    height: 300,
+    width: 300,
+    borderRadius: 20,
+  },
+  captionContainer: {
+    position: "absolute",
+    bottom: 20,
+    backgroundColor: "rgba(128, 128, 128, 0.5)",
+    marginTop: 10,
+    borderRadius: 20,
+  },
+  caption: {
+    padding: 10,
+    fontSize: 20,
+    color: "black",
+    textAlign: "center",
+    fontWeight: "bold",
   },
   buttonContainer: {
     flexDirection: "row",

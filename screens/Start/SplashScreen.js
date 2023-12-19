@@ -10,7 +10,7 @@ import {
 import Entypo from "@expo/vector-icons/Entypo";
 import * as SplashScreen from "expo-splash-screen";
 import * as Font from "expo-font";
-import { STYLES } from "../../theme/style";
+import { COLORS, STYLES } from "../../theme/style";
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
@@ -80,6 +80,7 @@ export default function Splash({ navigation }) {
         alignItems: "center",
         justifyContent: "center",
         flexDirection: "row",
+        backgroundColor: COLORS.lightBlack,
       }}
       onLayout={onLayoutRootView}
     >
@@ -101,7 +102,7 @@ export default function Splash({ navigation }) {
       />
       <Animated.Text
         style={[
-          STYLES.title,
+          STYLES.header,
           {
             opacity: textAnim,
             paddingLeft: 10,

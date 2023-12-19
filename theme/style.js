@@ -1,6 +1,7 @@
 const COLORS = {
   white: "#fff",
   black: "#000",
+  lightBlack: "#101010",
   logo: "#7ed957",
   highlight: "#192b11",
   gray: "#A9A9A9",
@@ -17,18 +18,19 @@ const FONTS = {
 const STYLES = {
   container: {
     flex: 1,
+    backgroundColor: COLORS.lightBlack,
   },
   header: {
     fontFamily: FONTS.sacramento,
     fontSize: 24,
-    color: "#000",
+    color: COLORS.white,
     fontWeight: "bold",
     textAlign: "center",
   },
   title: {
     fontFamily: FONTS.playfair,
     fontSize: 20,
-    color: "#000",
+    color: COLORS.white,
     textAlign: "center",
     fontWeight: "bold",
   },

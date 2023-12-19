@@ -4,12 +4,12 @@ import Icon from "react-native-vector-icons/Ionicons";
 import { COLORS } from "../../../theme/style";
 
 const iconColor = (icon) => {
-  if (icon === 'trash') {
+  if (icon === "trash") {
     return COLORS.red;
   } else {
-    return '#616161';
+    return COLORS.white;
   }
-}
+};
 
 const Setting = ({ header, items }) => {
   const [form, setForm] = useState({
@@ -26,18 +26,14 @@ const Setting = ({ header, items }) => {
   return (
     <View style={styles.section} key={header[0].id}>
       <View style={styles.sectionHeader}>
-        <Icon
-          name={header[0].iconName}
-          size={22}
-          style={{ paddingRight: 15 }}
-        />
+        <Icon name={header[0].iconName} size={22} style={styles.sectionIcon} />
         <Text style={styles.sectionHeaderText}>{header[0].label}</Text>
       </View>
       <View style={styles.sectionBody}>
         {items.map(({ id, label, icon, type, value }, index) => {
           return (
             <View
-              key={id} 
+              key={id}
               style={[styles.rowWrapper, index === 0 && { borderTopWidth: 0 }]}
             >
               <TouchableOpacity onPress={handlePress}>
@@ -81,26 +77,27 @@ export default Setting;
 
 const styles = {
   section: {
-    paddingTop: 12,
+    backgroundColor: COLORS.lightBlack,
   },
   sectionHeader: {
     paddingHorizontal: 24,
-    paddingVertical: 8,
+    paddingVertical: 12,
     flexDirection: "row",
     alignItems: "center",
   },
   sectionHeaderText: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: "600",
-    color: "#a7a7a7",
+    color: COLORS.white,
     textTransform: "uppercase",
     letterSpacing: 1.2,
   },
   sectionBody: {
     borderTopWidth: 1,
     borderBottomWidth: 1,
-    borderColor: "#e3e3e3",
+    borderColor: COLORS.white,
   },
+  sectionIcon: { paddingRight: 15, color: COLORS.white },
   header: {
     paddingLeft: 24,
     paddingRight: 24,
@@ -130,6 +127,7 @@ const styles = {
     backgroundColor: "#fff",
     borderTopWidth: 1,
     borderColor: "#e3e3e3",
+    backgroundColor: COLORS.darkGray,
   },
   rowIcon: {
     marginRight: 12,
@@ -137,7 +135,7 @@ const styles = {
   rowLabel: {
     fontSize: 17,
     fontWeight: "500",
-    color: "#000",
+    color: COLORS.white,
   },
   rowValue: {
     fontSize: 17,
