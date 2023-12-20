@@ -2,6 +2,7 @@ import {
   StyleSheet,
   Text,
   View,
+  TextInput,
   Image,
   TouchableOpacity,
   StatusBar,
@@ -15,7 +16,7 @@ import { firebase } from "../../config";
 import * as MediaLibrary from "expo-media-library";
 import Icon from "react-native-vector-icons/Ionicons";
 import { useNavigation } from "@react-navigation/native";
-
+import { useAuth } from "../../context/AuthContext";
 import { COLORS, STYLES } from "../../theme/style";
 
 export default function HomeScreen() {
@@ -25,7 +26,7 @@ export default function HomeScreen() {
     { id: "3", name: "Charlie" },
     // Thêm các thông tin bạn bè khác nếu cần
   ]);
-
+  const { user } = useAuth();
   const navigation = useNavigation();
   const [isLoading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -94,36 +95,21 @@ export default function HomeScreen() {
       setLoading(true);
       try {
         const filename = `image-${Date.now()}`;
-        const blob = await response.blob();
-        // const blob = await new Promise((resolve, reject) => {
-        //   const xhr = new XMLHttpRequest();
-        //   xhr.onload = () => {
-        //     resolve(xhr.response);
-        //   };
-        //   xhr.onerror = function (e) {
-        //     console.log(e);
-        //     reject(new TypeError("Network request failed"));
-        //   };
-        //   xhr.responseType = "blob";
-        //   xhr.open("GET", image, true);
-        //   xhr.send(null);
-        // });
-
+        // Tạo metadata với thông tin người dùng (ví dụ: userId và userName)
         const metadata = {
           contentType: "image/jpeg",
           customMetadata: {
-            userId: userId,
+            userId: user.id,
+            userName: `${user.firstName} ${user.lastName}`, // Thay userName bằng tên của người dùng hiện tại
             timestamp: Date.now().toString(),
-            caption: caption, // Đính kèm caption vào metadata
+            caption: caption,
           },
         };
-
-        const ref = firebase
-          .storage()
-          .ref()
-          .child(`images/` + filename);
+  
+        // Upload hình ảnh với metadata
+        const ref = firebase.storage().ref().child(`images/` + filename);
         await ref.put(blob, metadata);
-
+  
         setUploading(false);
         Alert.alert("Image uploaded successfully! 🎉");
         setImage(null);
@@ -137,6 +123,7 @@ export default function HomeScreen() {
       }
     }
   };
+  
 
   const flipCamera = () => {
     setType(
@@ -244,6 +231,7 @@ export default function HomeScreen() {
                 <TextInput
                   style={styles.caption}
                   placeholder="Add a caption"
+                  placeholderTextColor={COLORS.white}
                   onChangeText={(text) => {
                     if (text.length <= 27) {
                       setCaption(text);

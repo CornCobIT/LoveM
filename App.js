@@ -3,8 +3,9 @@ import { useFonts } from "expo-font";
 import { Camera } from "expo-camera";
 import * as Contacts from "expo-contacts";
 
-import Loading from "./screens/Loading";
+import Loading from "./components/Loading";
 import MainNavigator from "./navigation/MainNavigator";
+import { AuthProvider } from "./context/AuthContext";
 
 const fetchFonts = {
   Playfair: require("./assets/fonts/PlayfairDisplay.ttf"),
@@ -28,9 +29,13 @@ const App = () => {
   }
 
   if (!isLoaded) {
-    return <Loading />;
+    return <Loading visible={true} />;
   } else {
-    return <MainNavigator />;
+    return (
+      <AuthProvider>
+        <MainNavigator />
+      </AuthProvider>
+    );
   }
 };
 

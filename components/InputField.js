@@ -65,7 +65,7 @@ const styles = StyleSheet.create({
   inputSection: {
     marginBottom: 20,
     borderWidth: 1.5,
-    borderRadius: 10,
+    borderRadius: 20,
     flexDirection: "row",
     backgroundColor: COLORS.white
   },
@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
   borderText: {
     flexDirection: "row",
     width: "100%",
-    height: 60,
+    height: 57,
     borderRadius: 40,
     alignItems: "center",
     paddingLeft: 20,
@@ -97,7 +97,7 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    fontSize: 20,
+    fontSize: 16,
   },
 });
 

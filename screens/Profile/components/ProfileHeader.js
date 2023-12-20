@@ -1,15 +1,25 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, Image, TouchableOpacity, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  StyleSheet,
+  ToastAndroid,
+} from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import { useActionSheet } from "@expo/react-native-action-sheet";
 import * as ImagePicker from "expo-image-picker";
 
 import { COLORS, STYLES } from "../../../theme/style";
 import HeaderLeft from "../../../components/HeaderLeft";
+import { firebase } from "../../../config";
+import { useAuth } from "../../../context/AuthContext";
 
 export default function ProfileHeader({ navigation }) {
   const { showActionSheetWithOptions } = useActionSheet();
   const [image, setImage] = useState(null);
+  const { user, updateUserProfile } = useAuth();
 
   useEffect(() => {
     (async () => {
@@ -22,6 +32,42 @@ export default function ProfileHeader({ navigation }) {
       }
     })();
   }, []);
+
+  useEffect(() => {
+    if (user && user.avatar) {
+      setImage(user.avatar);
+    }
+  }, [user]);
+
+  const updateProfilePicture = async (selectedImage) => {
+    const user = firebase.auth().currentUser;
+    try {
+      const uri = selectedImage.assets[0].uri; // Truy cập 'uri' từ 'assets'
+      await user.updateProfile({
+        photoURL: uri,
+      });
+      setImage(uri);
+      showToast("Profile picture updated successfully!");
+      firebase
+        .firestore()
+        .collection("users")
+        .doc(user.uid)
+        .update({ photoURL: uri });
+      updateUserProfile({ avatar: uri });
+    } catch (error) {
+      console.log("Error updating profile picture: ", error);
+    }
+  };
+
+  const showToast = (message) => {
+    ToastAndroid.showWithGravityAndOffset(
+      message,
+      ToastAndroid.SHORT,
+      ToastAndroid.BOTTOM,
+      25,
+      50
+    );
+  };
 
   const onAddPress = () => {
     const options = ["Choose from Library", "Take a Photo", "Cancel"];
@@ -40,28 +86,27 @@ export default function ProfileHeader({ navigation }) {
             let resultFromLibrary = await ImagePicker.launchImageLibraryAsync({
               mediaTypes: ImagePicker.MediaTypeOptions.All,
               allowsEditing: true,
-              aspect: [4, 3],
+              aspect: [1, 1],
               quality: 1,
             });
 
             if (!resultFromLibrary.canceled) {
-              setImage(resultFromLibrary.assets[0].uri);
+              await updateProfilePicture(resultFromLibrary);
             }
             break;
           case 1:
             let resultFromCamera = await ImagePicker.launchCameraAsync({
               mediaTypes: ImagePicker.MediaTypeOptions.All,
               allowsEditing: true,
-              aspect: [4, 3],
+              aspect: [1, 1],
               quality: 1,
             });
 
             if (!resultFromCamera.canceled) {
-              setImage(resultFromCamera.assets[0].uri);
+              await updateProfilePicture(resultFromCamera);
             }
             break;
           case 2:
-            // code to cancel
             break;
           default:
             break;
@@ -75,16 +120,14 @@ export default function ProfileHeader({ navigation }) {
       <HeaderLeft
         icon={"arrow-back"}
         name={"Profile"}
-        handlePress={()=> navigation.goBack()}
+        handlePress={() => navigation.goBack()}
       />
       <View style={styles.profile}>
         <View style={styles.profileOutline}>
           <Image
             alt="avatar"
             source={{
-              uri:
-                image ||
-                "https://images.unsplash.com/photo-1633332755192-727a05c4013d?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=2.5&w=256&h=256&q=80",
+              uri: image,
             }}
             style={styles.profileAvatar}
           />
@@ -92,12 +135,14 @@ export default function ProfileHeader({ navigation }) {
             <TouchableOpacity style={styles.iconBg} onPress={onAddPress}>
               <Image
                 style={styles.buttonIcon}
-                source={require('../../../assets/icons/plus.png')}
+                source={require("../../../assets/icons/plus.png")}
               />
             </TouchableOpacity>
           </View>
         </View>
-        <Text style={styles.profileName}>John Doe</Text>
+        <Text style={styles.profileName}>
+          {user.firstName} {user.lastName}
+        </Text>
 
         <TouchableOpacity onPress={() => navigation.navigate("EditProfile")}>
           <View style={styles.profileAction}>
@@ -108,7 +153,7 @@ export default function ProfileHeader({ navigation }) {
       </View>
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   profile: {

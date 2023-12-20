@@ -1,6 +1,9 @@
-import React, { useState, useCallback, useMemo } from "react";
-import { View, Text, TouchableOpacity, Switch } from "react-native";
+import React, { useCallback } from "react";
+import { View, Text, TouchableOpacity, Alert } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
+import { useNavigation } from "@react-navigation/native";
+import { firebase } from "../../../config";
+
 import { COLORS } from "../../../theme/style";
 
 const iconColor = (icon) => {
@@ -12,16 +15,75 @@ const iconColor = (icon) => {
 };
 
 const Setting = ({ header, items }) => {
-  const [form, setForm] = useState({
-    language: "English",
-    darkMode: true,
-  });
+  const navigation = useNavigation();
 
-  const handlePress = useCallback(() => {
-    // handle onPress
+  const handlePress = useCallback((id) => {
+    if (id === "addWidget") {
+      navigation.navigate("Intro");
+    } else if (id === "logout") {
+      Alert.alert(
+        "Confirmation",
+        "Are you sure you want to log out?",
+        [
+          {
+            text: "Cancel",
+            onPress: () => console.log("Cancel Pressed"),
+            style: "cancel",
+          },
+          {
+            text: "Log Out",
+            onPress: handleLogout,
+            style: "destructive",
+          },
+        ],
+        { cancelable: false }
+      );
+    } else if (id === "delete") {
+      handleDeleteAccount();
+    }
   }, []);
 
-  const formValue = useMemo(() => form, [form]);
+  const handleLogout = async () => {
+    try {
+      await firebase.auth().signOut(); // Thực hiện logout từ Firebase
+      updateUserProfile(null); // Xóa thông tin user từ context
+    } catch (error) {
+      console.error("Error logging out: ", error);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    try {
+      // Hiển thị thông báo xác nhận xóa tài khoản
+      Alert.alert(
+        "Confirmation",
+        "Are you sure you want to delete your account?",
+        [
+          {
+            text: "Cancel",
+            onPress: () => console.log("Cancel Pressed"),
+            style: "cancel",
+          },
+          {
+            text: "Delete",
+            onPress: async () => {
+              // Thực hiện xóa tài khoản từ Firebase
+              const user = firebase.auth().currentUser;
+              if (user) {
+                await user.delete();
+                console.log("User deleted successfully!");
+                updateUserProfile(null); // Xóa thông tin user từ context
+              }
+            },
+            style: "destructive",
+          },
+        ],
+        { cancelable: false }
+      );
+    } catch (error) {
+      console.error("Error deleting account: ", error);
+    }
+  };
 
   return (
     <View style={styles.section} key={header[0].id}>
@@ -36,7 +98,7 @@ const Setting = ({ header, items }) => {
               key={id}
               style={[styles.rowWrapper, index === 0 && { borderTopWidth: 0 }]}
             >
-              <TouchableOpacity onPress={handlePress}>
+              <TouchableOpacity onPress={() => handlePress(id)}>
                 <View style={styles.row}>
                   <Icon
                     color={iconColor(icon)}
@@ -48,17 +110,6 @@ const Setting = ({ header, items }) => {
                   <Text style={styles.rowLabel}>{label}</Text>
 
                   <View style={styles.rowSpacer} />
-
-                  {type === "select" && (
-                    <Text style={styles.rowValue}>{formValue[id]}</Text>
-                  )}
-
-                  {type === "toggle" && (
-                    <Switch
-                      onChange={(val) => setForm({ ...formValue, [id]: val })}
-                      value={formValue[id]}
-                    />
-                  )}
 
                   {(type === "select" || type === "link") && (
                     <Icon color="#ababab" name="chevron-forward" size={22} />

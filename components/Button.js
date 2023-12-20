@@ -14,12 +14,12 @@ const styles = StyleSheet.create({
   button: {
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 50,
+    borderRadius: 20,
     shadowColor: COLORS.highlight,
     shadowOpacity: 0.36,
     shadowRadius: 4.65,
     elevation: 11,
-    height: 60,
+    height: 57,
     paddingHorizontal: 10,
   },
 });

@@ -60,7 +60,7 @@ const SECTIONS = [
   {
     header: [{ id: "danger", label: "Danger Zone", iconName: "alert-circle" }],
     items: [
-      { id: "signOut", icon: "hand-right", label: "Sign Out", type: "link" },
+      { id: "logout", icon: "hand-right", label: "Log Out", type: "link" },
       { id: "delete", icon: "trash", label: "Delete account", type: "link" },
     ],
   },

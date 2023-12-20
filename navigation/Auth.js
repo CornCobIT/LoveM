@@ -9,17 +9,22 @@ import HomeNavigator from "./HomeNavigator";
 const Stack = createStackNavigator();
 
 export default function Auth() {
-  const [initializing, setInittializing] = useState(true);
-  const [user, setUser] = useState();
-
-  function onAuthStateChanged(user) {
-    setUser(user);
-    if (initializing) setInittializing(false);
-  }
+  const [initializing, setInitializing] = useState(true);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
-    const subscriber = firebase.auth().onAuthStateChanged(onAuthStateChanged);
-    return subscriber;
+    const subscriber = firebase
+      .auth()
+      .onAuthStateChanged((authenticatedUser) => {
+        if (authenticatedUser) {
+          setUser(authenticatedUser);
+        } else {
+          setUser(null);
+        }
+        setInitializing(false);
+      });
+
+    return subscriber; 
   }, []);
 
   if (initializing) return null;

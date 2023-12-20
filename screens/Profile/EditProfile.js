@@ -6,21 +6,21 @@ import {
   View,
   Platform,
   ScrollView,
+  ToastAndroid,
 } from "react-native";
 
 import InputField from "../../components/InputField";
 import { COLORS, STYLES } from "../../theme/style";
 import ButtonCustom from "../../components/Button";
 import HeaderLeft from "../../components/HeaderLeft";
-
-const user = {
-  firstName: "John",
-  lastName: "Doe",
-};
+import { useAuth } from "../../context/AuthContext";
 
 export default function EditProfile({ navigation }) {
+  const { user, updateUserProfile } = useAuth();
   const [firstNameFocused, setFirstNameFocused] = useState(false);
   const [lastNameFocused, setLastNameFocused] = useState(false);
+  const [firstName, setFirstName] = useState(user.firstName);
+  const [lastName, setLastName] = useState(user.lastName);
 
   const handleFocus = (inputName) => {
     switch (inputName) {
@@ -48,6 +48,30 @@ export default function EditProfile({ navigation }) {
     }
   };
 
+  const handleSave = async () => {
+    const user = firebase.auth().currentUser;
+    try {
+      await firebase.firestore().collection("users").doc(user.uid).update({
+        firstName,
+        lastName,
+      });
+      updateUserProfile({ firstName, lastName }); // Cập nhật userProfile trong context
+      showToast("Name updated successfully!");
+    } catch (error) {
+      console.log("Error updating name: ", error);
+    }
+  };
+
+  const showToast = (message) => {
+    ToastAndroid.showWithGravityAndOffset(
+      message,
+      ToastAndroid.SHORT,
+      ToastAndroid.BOTTOM,
+      25,
+      50
+    );
+  };
+
   return (
     <View style={STYLES.container}>
       <HeaderLeft icon={"arrow-back"} handlePress={() => navigation.goBack()} />
@@ -62,7 +86,7 @@ export default function EditProfile({ navigation }) {
           <View style={styles.inputContainer}>
             <InputField
               label="First Name"
-              value={user.firstName}
+              value={firstName}
               placeholder="First name"
               keyboardType="default"
               secureTextEntry={false}
@@ -71,15 +95,17 @@ export default function EditProfile({ navigation }) {
               onBlur={() => handleBlur("firstName")}
               focused={firstNameFocused}
               toggleVisibility={false}
+              onChangeText={setFirstName}
             />
             <InputField
               label="Last Name"
-              value={user.lastName}
+              value={lastName}
               placeholder="Last name"
               keyboardType="default"
               onFocus={() => handleFocus("lastName")}
               onBlur={() => handleBlur("lastName")}
               focused={lastNameFocused}
+              onChangeText={setLastName}
             />
           </View>
         </ScrollView>
@@ -87,7 +113,7 @@ export default function EditProfile({ navigation }) {
           <ButtonCustom
             text={"Save"}
             backgroundColor={COLORS.logo}
-            handlePress={() => {}}
+            handlePress={handleSave}
           />
         </View>
       </KeyboardAvoidingView>
@@ -98,21 +124,21 @@ export default function EditProfile({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'space-between',
+    justifyContent: "space-between",
   },
   keyboardView: {
     flex: 1,
   },
   scrollContainer: {
     flexGrow: 1,
-    justifyContent: 'center',
+    justifyContent: "center",
     padding: 30,
   },
   headerContainer: {
     marginBottom: 70,
   },
   inputContainer: {
-    width: '100%',
+    width: "100%",
   },
   buttonContainer: {
     padding: 30,
