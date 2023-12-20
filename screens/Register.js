@@ -235,6 +235,11 @@ const styles = StyleSheet.create({
     margin: 10,
     color: "white",
   },
+  errorTextStyle: {
+    color: "red",
+    textAlign: "center",
+    fontSize: 14,
+  },
 });
 
 export default RegisterScreen;
