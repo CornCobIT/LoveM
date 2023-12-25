@@ -34,6 +34,7 @@ function InputField({
           />
         )}
         <TextInput
+          value={value}
           placeholder={placeholder}
           placeholderTextColor={COLORS.gray}
           keyboardType={keyboardType}

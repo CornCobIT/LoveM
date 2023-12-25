@@ -2,22 +2,22 @@ import {
   StyleSheet,
   Text,
   View,
-  TextInput,
   Image,
   TouchableOpacity,
   StatusBar,
-  ActivityIndicator,
   Alert,
   FlatList,
+  TextInput,
 } from "react-native";
 import React, { useState, useRef, useEffect } from "react";
-import { Camera, CameraType } from "expo-camera";
+import { Camera } from "expo-camera";
 import { firebase } from "../../config";
 import * as MediaLibrary from "expo-media-library";
 import Icon from "react-native-vector-icons/Ionicons";
 import { useNavigation } from "@react-navigation/native";
 import { useAuth } from "../../context/AuthContext";
 import { COLORS, STYLES } from "../../theme/style";
+import Loading from "../../components/Loading";
 
 export default function HomeScreen() {
   const [friendList, setFriendList] = useState([
@@ -26,10 +26,9 @@ export default function HomeScreen() {
     { id: "3", name: "Charlie" },
     // Thêm các thông tin bạn bè khác nếu cần
   ]);
-  const { user } = useAuth();
+  const { user, uploadImage } = useAuth();
   const navigation = useNavigation();
   const [isLoading, setLoading] = useState(false);
-  const [uploading, setUploading] = useState(false);
   const [showFriendList, setShowFriendList] = useState(false);
   const [hasCameraPermission, setHasCameraPermission] = useState(null);
   const [hasGalleryPermission, setHasGalleryPermission] = useState(null);
@@ -39,6 +38,20 @@ export default function HomeScreen() {
   const [flash, setFlash] = useState(Camera.Constants.FlashMode.off);
   const [ratio, setRatio] = useState("1:1");
   const cameraRef = useRef(null);
+
+  const [cameraKey, setCameraKey] = useState(0);
+
+  const resetCamera = () => {
+    setCameraKey((prevKey) => prevKey + 1);
+  };
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("focus", () => {
+      resetCamera();
+    });
+
+    return unsubscribe;
+  }, [navigation]);
 
   useEffect(() => {
     (async () => {
@@ -52,8 +65,26 @@ export default function HomeScreen() {
     // Ví dụ: gọi hàm để lấy danh sách bạn bè từ API hoặc hiển thị một Modal chứa danh sách bạn bè
   };
 
+  const sendPicture = async () => {
+    if (!image) {
+      alert("No image available!");
+    } else {
+      setLoading(true);
+      try {
+        await uploadImage(image, caption);
+        setImage(null);
+        setCaption(null);
+      } catch (e) {
+        console.log(`Error upload image: ${e}`);
+        alert("Failed to upload image!");
+      } finally {
+        setLoading(false);
+      }
+    }
+  };  
+
   const takePicture = async () => {
-    if (cameraRef) {
+    if (cameraRef && hasCameraPermission) {
       try {
         const data = await cameraRef.current.takePictureAsync();
         console.log(data);
@@ -86,44 +117,6 @@ export default function HomeScreen() {
       console.log(e);
     }
   };
-
-  const sendPicture = async () => {
-    setUploading(true);
-    if (!image) {
-      alert("No image available!");
-    } else {
-      setLoading(true);
-      try {
-        const filename = `image-${Date.now()}`;
-        // Tạo metadata với thông tin người dùng (ví dụ: userId và userName)
-        const metadata = {
-          contentType: "image/jpeg",
-          customMetadata: {
-            userId: user.id,
-            userName: `${user.firstName} ${user.lastName}`, // Thay userName bằng tên của người dùng hiện tại
-            timestamp: Date.now().toString(),
-            caption: caption,
-          },
-        };
-  
-        // Upload hình ảnh với metadata
-        const ref = firebase.storage().ref().child(`images/` + filename);
-        await ref.put(blob, metadata);
-  
-        setUploading(false);
-        Alert.alert("Image uploaded successfully! 🎉");
-        setImage(null);
-        setCaption("");
-      } catch (e) {
-        console.log(`Error upload image: ${e}`);
-        alert("Failed to upload image!");
-        setUploading(false);
-      } finally {
-        setLoading(false);
-      }
-    }
-  };
-  
 
   const flipCamera = () => {
     setType(
@@ -182,6 +175,7 @@ export default function HomeScreen() {
               data={friendList}
               renderItem={({ item }) => (
                 <View style={styles.friendListContainer}>
+                  <Image style={{ height: 30, width: 30, borderRadius: 9999, marginRight: 10,}} source={require('../../assets/qr-code.png')} />
                   <Text style={styles.buttonText}>{item.name}</Text>
                 </View>
               )}
@@ -204,6 +198,7 @@ export default function HomeScreen() {
             // Chụp hình
             <View style={styles.cameraFrame}>
               <Camera
+                key={`Camera-${cameraKey}`}
                 style={styles.cameraImage}
                 type={type}
                 flashMode={flash}
@@ -212,7 +207,7 @@ export default function HomeScreen() {
               />
             </View>
           ) : isLoading ? (
-            <ActivityIndicator size="large" color={COLORS.logo} />
+            <Loading />
           ) : (
             // Hiển thị hình
 
@@ -305,7 +300,7 @@ export default function HomeScreen() {
           )}
         </View>
         <View style={styles.buttonContainer}>
-          <TouchableOpacity onPress={() => navigation.navigate("ImageList")}>
+          <TouchableOpacity onPress={() => navigation.navigate("DisplayScreen")}>
             <Icon style={styles.icon} name="caret-down" size={40} />
           </TouchableOpacity>
         </View>
@@ -348,6 +343,8 @@ const styles = StyleSheet.create({
   friendListContainer: {
     paddingVertical: 10,
     paddingHorizontal: 20,
+    flexDirection: "row",
+    alignItems: "center",
   },
   cameraFrame: {
     width: 350,
