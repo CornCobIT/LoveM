@@ -19,7 +19,9 @@ import { useAuth } from "../../../context/AuthContext";
 export default function ProfileHeader({ navigation }) {
   const { showActionSheetWithOptions } = useActionSheet();
   const [image, setImage] = useState(null);
-  const { user, updateUserProfile } = useAuth();
+  const { user, updateUserAvatar, uploadAvatar } = useAuth();
+  const [firstName, setFirstName] = useState(user?.firstName || "");
+  const [lastName, setLastName] = useState(user?.lastName || "");
 
   useEffect(() => {
     (async () => {
@@ -34,30 +36,169 @@ export default function ProfileHeader({ navigation }) {
   }, []);
 
   useEffect(() => {
+    setFirstName(user?.firstName || '');
+    setLastName(user?.lastName || '');
+  }, [user]);
+  useEffect(() => {
     if (user && user.avatar) {
       setImage(user.avatar);
     }
   }, [user]);
 
-  const updateProfilePicture = async (selectedImage) => {
-    const user = firebase.auth().currentUser;
+
+  const updateProfilePicture = async (result) => {
+    if (result.canceled) return;
+  
     try {
-      const uri = selectedImage.assets[0].uri; // Truy cập 'uri' từ 'assets'
-      await user.updateProfile({
-        photoURL: uri,
+      const asset = result.assets[0];
+      const uri = asset.uri;
+  
+      const downloadURL = await uploadAvatar(uri);
+  
+      const userRef = doc(firestore, "users", auth.currentUser.uid);
+      await updateDoc(userRef, { photoURL: downloadURL });
+  
+      updateUserAvatar({
+        avatar: downloadURL,
       });
-      setImage(uri);
-      showToast("Profile picture updated successfully!");
-      firebase
-        .firestore()
-        .collection("users")
-        .doc(user.uid)
-        .update({ photoURL: uri });
-      updateUserProfile({ avatar: uri });
+  
+      setImage(downloadURL);
+      navigation.navigate('ProfileScreen');
     } catch (error) {
-      console.log("Error updating profile picture: ", error);
+      console.error("Error updating profile picture:", error);
     }
   };
+  
+  const onAddPress = async () => {
+    const options = ["Choose from Library", "Take a Photo", "Cancel"];
+    const cancelButtonIndex = 2;
+  
+    showActionSheetWithOptions(
+      {
+        options,
+        cancelButtonIndex,
+        title: "Change your avatar",
+        message: "Select an option to update your profile picture",
+      },
+      async (buttonIndex) => {
+        let result;
+        switch (buttonIndex) {
+          case 0:
+            result = await ImagePicker.launchImageLibraryAsync({
+              mediaTypes: ImagePicker.MediaTypeOptions.Images,
+              allowsEditing: true,
+              aspect: [1, 1],
+              quality: 1,
+            });
+            break;
+          case 1:
+            result = await ImagePicker.launchCameraAsync({
+              mediaTypes: ImagePicker.MediaTypeOptions.Images,
+              allowsEditing: true,
+              aspect: [1, 1],
+              quality: 1,
+            });
+            break;
+          case 2:
+            return;
+          default:
+            return;
+        }
+  
+        if (!result.canceled) {
+          await updateProfilePicture(result);
+        }
+      }
+    );
+  };
+  //   try {
+  //     const uri = selectedImage.assets[0]?.uri;
+  //     const response = await fetch(uri);
+  //     const blob = await response.blob();
+
+  //     const filename = `avatars/avatar_${user.uid}`;
+  //     const ref = firebase.storage().ref().child(filename);
+  //     await ref.put(blob);
+
+  //     const downloadURL = await ref.getDownloadURL();
+
+  //     updateUserAvatar({
+  //       avatar: downloadURL,
+  //       // photoURL: downloadURL,
+  //     });
+
+  //     await firebase
+  //       .firestore()
+  //       .collection("users")
+  //       .doc(user.uid)
+  //       .update({ photoURL: downloadURL });
+
+  //     showToast("Profile picture updated successfully!");
+  //     setImage(downloadURL);
+  //   } catch (error) {
+  //     console.error("Error updating profile picture:", error);
+  //   }
+  //   //   await user.updateProfile({
+  //   //     photoURL: uri,
+  //   //   });
+  //   //   setImage(uri);
+  //   //   showToast("Profile picture updated successfully!");
+  //   //   firebase
+  //   //     .firestore()
+  //   //     .collection("users")
+  //   //     .doc(user.uid)
+  //   //     .update({ photoURL: uri });
+  //   //   updateUserProfile({ avatar: uri, photoURL: uri });
+  //   // } catch (error) {
+  //   //   console.log("Error updating profile picture: ", error);
+  //   // }
+  // };
+
+  // const onAddPress = () => {
+  //   const options = ["Choose from Library", "Take a Photo", "Cancel"];
+  //   const cancelButtonIndex = 2;
+
+  //   showActionSheetWithOptions(
+  //     {
+  //       options,
+  //       cancelButtonIndex,
+  //       title: "Change your avatar",
+  //       message: "Select an option to update your profile picture",
+  //     },
+  //     async (buttonIndex) => {
+  //       switch (buttonIndex) {
+  //         case 0:
+  //           let resultFromLibrary = await ImagePicker.launchImageLibraryAsync({
+  //             mediaTypes: ImagePicker.MediaTypeOptions.All,
+  //             allowsEditing: true,
+  //             aspect: [1, 1],
+  //             quality: 1,
+  //           });
+
+  //           if (!resultFromLibrary.canceled) {
+  //             await updateProfilePicture(resultFromLibrary);
+  //           }
+  //           break;
+  //         case 1:
+  //           let resultFromCamera = await ImagePicker.launchCameraAsync({
+  //             mediaTypes: ImagePicker.MediaTypeOptions.All,
+  //             allowsEditing: true,
+  //             aspect: [1, 1],
+  //             quality: 1,
+  //           });
+
+  //           if (!resultFromCamera.canceled) {
+  //             await updateProfilePicture(resultFromCamera);
+  //           }
+  //           break;
+  //         case 2:
+  //           break;
+  //         default:
+  //           break;
+  //       }
+  //     }
+  //   );
+  // };
 
   const showToast = (message) => {
     ToastAndroid.showWithGravityAndOffset(
@@ -69,58 +210,12 @@ export default function ProfileHeader({ navigation }) {
     );
   };
 
-  const onAddPress = () => {
-    const options = ["Choose from Library", "Take a Photo", "Cancel"];
-    const cancelButtonIndex = 2;
-
-    showActionSheetWithOptions(
-      {
-        options,
-        cancelButtonIndex,
-        title: "Change your avatar",
-        message: "Select an option to update your profile picture",
-      },
-      async (buttonIndex) => {
-        switch (buttonIndex) {
-          case 0:
-            let resultFromLibrary = await ImagePicker.launchImageLibraryAsync({
-              mediaTypes: ImagePicker.MediaTypeOptions.All,
-              allowsEditing: true,
-              aspect: [1, 1],
-              quality: 1,
-            });
-
-            if (!resultFromLibrary.canceled) {
-              await updateProfilePicture(resultFromLibrary);
-            }
-            break;
-          case 1:
-            let resultFromCamera = await ImagePicker.launchCameraAsync({
-              mediaTypes: ImagePicker.MediaTypeOptions.All,
-              allowsEditing: true,
-              aspect: [1, 1],
-              quality: 1,
-            });
-
-            if (!resultFromCamera.canceled) {
-              await updateProfilePicture(resultFromCamera);
-            }
-            break;
-          case 2:
-            break;
-          default:
-            break;
-        }
-      }
-    );
-  };
-
   return (
     <View style={STYLES.container}>
       <HeaderLeft
         icon={"arrow-back"}
         name={"Profile"}
-        handlePress={() => navigation.goBack()}
+        handlePress={() => navigation.navigate("Home")}
       />
       <View style={styles.profile}>
         <View style={styles.profileOutline}>
@@ -141,7 +236,7 @@ export default function ProfileHeader({ navigation }) {
           </View>
         </View>
         <Text style={styles.profileName}>
-          {user.firstName} {user.lastName}
+          {firstName} {lastName}
         </Text>
 
         <TouchableOpacity onPress={() => navigation.navigate("EditProfile")}>

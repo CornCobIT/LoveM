@@ -3,8 +3,9 @@ import { View, Text, TouchableOpacity, Alert } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import { useNavigation } from "@react-navigation/native";
 import { firebase } from "../../../config";
-
+import { useAuth } from "../../../context/AuthContext";
 import { COLORS } from "../../../theme/style";
+
 
 const iconColor = (icon) => {
   if (icon === "trash") {
@@ -16,10 +17,13 @@ const iconColor = (icon) => {
 
 const Setting = ({ header, items }) => {
   const navigation = useNavigation();
-
+  const { updateUser, logout } = useAuth();
+  
   const handlePress = useCallback((id) => {
-    if (id === "addWidget") {
+    if (id === "widget") {
       navigation.navigate("Intro");
+    } else if (id === "changeEmail"){
+      navigation.navigate("ChangeEmail")
     } else if (id === "logout") {
       Alert.alert(
         "Confirmation",
@@ -27,7 +31,6 @@ const Setting = ({ header, items }) => {
         [
           {
             text: "Cancel",
-            onPress: () => console.log("Cancel Pressed"),
             style: "cancel",
           },
           {
@@ -45,8 +48,9 @@ const Setting = ({ header, items }) => {
 
   const handleLogout = async () => {
     try {
-      await firebase.auth().signOut(); // Thực hiện logout từ Firebase
-      updateUserProfile(null); // Xóa thông tin user từ context
+      logout();
+      updateUser(null); 
+      navigation.navigate("Auth");
     } catch (error) {
       console.error("Error logging out: ", error);
     }
@@ -61,7 +65,6 @@ const Setting = ({ header, items }) => {
         [
           {
             text: "Cancel",
-            onPress: () => console.log("Cancel Pressed"),
             style: "cancel",
           },
           {
@@ -70,9 +73,14 @@ const Setting = ({ header, items }) => {
               // Thực hiện xóa tài khoản từ Firebase
               const user = firebase.auth().currentUser;
               if (user) {
-                await user.delete();
-                console.log("User deleted successfully!");
-                updateUserProfile(null); // Xóa thông tin user từ context
+                deleteUser(user)
+                  .then(() => {
+                    console.log("User deleted successfully!");
+                    updateUserProfile(null);
+                  })
+                  .catch((error) => {
+                    console.error("Error deleting user: ", error);
+                  });
               }
             },
             style: "destructive",

@@ -16,11 +16,11 @@ import HeaderLeft from "../../components/HeaderLeft";
 import { useAuth } from "../../context/AuthContext";
 
 export default function EditProfile({ navigation }) {
-  const { user, updateUserProfile } = useAuth();
+  const { user, updateUser } = useAuth();
   const [firstNameFocused, setFirstNameFocused] = useState(false);
   const [lastNameFocused, setLastNameFocused] = useState(false);
-  const [firstName, setFirstName] = useState(user.firstName);
-  const [lastName, setLastName] = useState(user.lastName);
+  const [firstName, setFirstName] = useState(user?.firstName||'');
+  const [lastName, setLastName] = useState(user?.lastName || '');
 
   const handleFocus = (inputName) => {
     switch (inputName) {
@@ -49,18 +49,21 @@ export default function EditProfile({ navigation }) {
   };
 
   const handleSave = async () => {
-    const user = firebase.auth().currentUser;
-    try {
-      await firebase.firestore().collection("users").doc(user.uid).update({
-        firstName,
-        lastName,
-      });
-      updateUserProfile({ firstName, lastName }); // Cập nhật userProfile trong context
-      showToast("Name updated successfully!");
-    } catch (error) {
-      console.log("Error updating name: ", error);
+    const updatedProfile = {
+      firstName: firstName,
+      lastName: lastName,
+    };
+  
+    if (updatedProfile.firstName.length > 30) {
+      throw new Error("< 30");
     }
+  
+    // Gọi hàm updateUser với updatedProfile
+    updateUser(updatedProfile);
+    showToast("Name updated successfully!");
+    navigation.navigate("Profile");
   };
+  
 
   const showToast = (message) => {
     ToastAndroid.showWithGravityAndOffset(

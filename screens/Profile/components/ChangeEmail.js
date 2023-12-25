@@ -1,60 +1,58 @@
-import React, { useState } from "react";
-import { View, Text, StyleSheet, Button, Alert } from "react-native";
+import React, { useState, useCallback } from "react";
+import { View, Text, StyleSheet, Alert } from "react-native";
 import { useAuth } from "../../../context/AuthContext";
 import InputField from "../../../components/InputField";
 import ButtonCustom from "../../../components/Button";
-import { STYLES } from "../../../theme/style";
+import { COLORS, STYLES } from "../../../theme/style";
+import HeaderLeft from "../../../components/HeaderLeft";
 
 const ChangeEmail = ({ navigation }) => {
-  const [newEmail, setNewEmail] = useState("");
-  const { user, updateUserProfile } = useAuth();
+  const { user, updateUserEmail } = useAuth();
+  const [newEmail, setNewEmail] = useState(user?.email || "");
+  const [password, setPassword] = useState("");
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
   const handleChangeEmail = async () => {
-    try {
-      if (user) {
-        await user.updateEmail(newEmail);
-        await user.sendEmailVerification(); // Gửi email xác nhận
-        Alert.alert(
-          "Email updated successfully! Please verify your new email."
-        );
-        updateUserProfile({ email: newEmail }); // Cập nhật thông tin người dùng trong Context
-      }
-    } catch (error) {
-      console.error("Error updating email: ", error);
-      if (error.code === "auth/email-already-in-use") {
-        Alert.alert("The new email is already in use by another account.");
-      } else {
-        Alert.alert("Failed to update email. Please try again.");
-      }
+    const result = await updateUserEmail(newEmail, password);
+    if (result.success) {
+      Alert.alert("Success", "Email updated successfully.");
+      navigation.goBack();
+    } else {
+      Alert.alert("Error", result.error.message);
     }
   };
+  
 
   return (
     <View style={STYLES.container}>
       <HeaderLeft icon={"arrow-back"} handlePress={() => navigation.goBack()} />
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={styles.keyboardView}
-      >
-        <View style={styles.headerContainer}>
-          <Text style={STYLES.header}>Enter new email:</Text>
-        </View>
+      <View style={styles.container}>
+        <Text style={[STYLES.header, { paddingBottom: 30 }]}>
+          Enter new email
+        </Text>
         <InputField
-          onChangeText={(text) => setNewEmail(text)}
-          value={newEmail}
+          onChangeText={setNewEmail}
           placeholder="New Email"
           keyboardType="email-address"
           autoCapitalize="none"
+          value={newEmail}
         />
-        <View style={styles.buttonContainer}>
-          <ButtonCustom
-            text="Change Email"
-            handlePress={handleChangeEmail}
-            color={COLORS.white}
-            backgroundColor={COLORS.logo}
-          />
-        </View>
-      </KeyboardAvoidingView>
+        <InputField
+          onChangeText={setPassword}
+          placeholder="Confirm password to change email"
+          isPasswordField={true}
+          secureTextEntry={!isPasswordVisible}
+          toggleVisibility={() => setIsPasswordVisible(!isPasswordVisible)}
+        />
+      </View>
+      <View style={styles.buttonContainer}>
+        <ButtonCustom
+          text="Change Email"
+          handlePress={handleChangeEmail}
+          color={COLORS.white}
+          backgroundColor={COLORS.logo}
+        />
+      </View>
     </View>
   );
 };
@@ -64,16 +62,8 @@ export default ChangeEmail;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "space-between",
-  },
-  keyboardView: {
-    flex: 1,
-  },
-  headerContainer: {
-    marginBottom: 70,
-  },
-  inputContainer: {
-    width: "100%",
+    padding: 30,
+    justifyContent: "center",
   },
   buttonContainer: {
     padding: 30,
