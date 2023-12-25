@@ -4,19 +4,17 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  ActivityIndicator,
   ScrollView,
   Image,
   StatusBar,
   Alert,
-  Modal,
 } from "react-native";
-import { firebase } from "../config";
 import ButtonCustom from "../components/Button";
 import InputField from "../components/InputField";
 import { useNavigation } from "@react-navigation/native";
 import { COLORS } from "../theme/style";
 import Loading from "../components/Loading";
+import { useAuth } from "../context/AuthContext";
 
 const RegisterScreen = () => {
   const navigation = useNavigation();
@@ -24,55 +22,8 @@ const RegisterScreen = () => {
   const [password, setPassword] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-
-  const getDownloadURL = async () => {
-    try {
-      const imageURL = await firebase.storage().ref('avt.jpg').getDownloadURL();
-      console.log("Image URL:", imageURL);
-      return imageURL;
-    } catch (error) {
-      console.log("Error getting image URL:", error);
-      return null;
-    }
-  };
-
-  const registerUser = async (email, password, firstName, lastName) => {
-    const defaultAvatar = await getDownloadURL();
-    try {
-      setIsLoading(true);
-      await firebase.auth().createUserWithEmailAndPassword(email, password);
-      await firebase.auth().currentUser.sendEmailVerification({
-        handleCodeInApp: true,
-        url: "https://lovem-c1e24.firebaseapp.com",
-      });
-      await firebase
-        .firestore()
-        .collection("users")
-        .doc(firebase.auth().currentUser.uid)
-        .set({
-          firstName,
-          lastName,
-          email,
-          avatar: defaultAvatar,
-        });
-      Alert.alert("Register successfully! 🎉", "Verification email sent");
-      navigation.navigate('Login');
-    } catch (error) {
-      console.log("Register failed: " + error);
-      if (error.code === "auth/invalid-email") {
-        alert("The email address is not valid.");
-      } else if (error.code === "auth/weak-password") {
-        alert("The password must be 6 characters long or more.");
-      } else if (error.code === "auth/email-already-in-use") {
-        alert("The email address is already in use by another account.");
-      } else {
-        alert("Register failed! 🥲");
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const { register, isLoading } = useAuth();
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
   const validateInputs = () => {
     if (!firstName || !lastName || !email || !password) {
@@ -84,7 +35,8 @@ const RegisterScreen = () => {
 
   const handleRegister = () => {
     if (validateInputs()) {
-      registerUser(email, password, firstName, lastName);
+      register(email, password, firstName, lastName);
+      navigation.navigate("Login");
     }
   };
 
@@ -119,7 +71,11 @@ const RegisterScreen = () => {
                 icon={"lock-closed"}
                 placeholder={"Password"}
                 onChangeText={(password) => setPassword(password)}
-                secureTextEntry={true}
+                isPasswordField={true}
+                secureTextEntry={!isPasswordVisible}
+                toggleVisibility={() =>
+                  setIsPasswordVisible(!isPasswordVisible)
+                }
               />
             </View>
             <ButtonCustom

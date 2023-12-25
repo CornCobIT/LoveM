@@ -1,36 +1,32 @@
 import { createStackNavigator } from "@react-navigation/stack";
-import React, { useState, useEffect } from "react";
-import { firebase } from "../config";
+import React from "react";
 
 import LoginScreen from "../screens/Login";
 import RegisterScreen from "../screens/Register";
-import HomeNavigator from "./HomeNavigator";
+import StartNavigator from "./StartNavigator";
+import { useStart } from "../context/StartContext";
 
 const Stack = createStackNavigator();
 
 export default function Auth() {
-  const [initializing, setInitializing] = useState(true);
-  const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    const subscriber = firebase
-      .auth()
-      .onAuthStateChanged((authenticatedUser) => {
-        if (authenticatedUser) {
-          setUser(authenticatedUser);
-        } else {
-          setUser(null);
-        }
-        setInitializing(false);
-      });
-
-    return subscriber; 
-  }, []);
-
-  if (initializing) return null;
-
+  const { isFirstLaunch } = useStart();
+  let routeName;
+  if (isFirstLaunch === null) {
+    return null;
+  }
+  else if (isFirstLaunch === true) {
+    routeName = "StartNavigator";
+  } else {
+    routeName = "Login";
+  }
+  
   return (
-    <Stack.Navigator initialRouteName={user ? "HomeNavigator" : "Login"}>
+    <Stack.Navigator initialRouteName={{ routeName }}>
+      <Stack.Screen
+        name="StartNavigator"
+        component={StartNavigator}
+        options={{ headerShown: false }}
+      />
       <Stack.Screen
         name="Login"
         component={LoginScreen}
@@ -41,11 +37,7 @@ export default function Auth() {
         component={RegisterScreen}
         options={{ headerShown: false }}
       />
-      <Stack.Screen
-        name="HomeNavigator"
-        component={HomeNavigator}
-        options={{ headerShown: false }}
-      />
     </Stack.Navigator>
   );
 }
+

@@ -1,10 +1,8 @@
 import React, { useCallback, useEffect, useState, useRef } from "react";
 import {
-  Text,
   View,
   Animated,
   StyleSheet,
-  Image,
   Dimensions,
 } from "react-native";
 import Entypo from "@expo/vector-icons/Entypo";

@@ -8,7 +8,8 @@ import {
 } from "react-native";
 import React, { useState } from "react";
 import { useNavigation } from "@react-navigation/native";
-import { firebase } from "../config";
+// import { firebase } from "../config";
+import { useAuth } from "../context/AuthContext";
 import { COLORS } from "../theme/style";
 import InputField from "../components/InputField";
 import ButtonCustom from "../components/Button";
@@ -18,35 +19,8 @@ const LoginScreen = () => {
   const navigation = useNavigation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-
-  loginUser = async (email, password) => {
-    console.log("emai: ", email, "password", password);
-    try {
-      setIsLoading(true);
-      const userCredential = await firebase
-        .auth()
-        .signInWithEmailAndPassword(email, password);
-      const user = userCredential.user;
-      console.log("User logged in:", user);
-      navigation.navigate("HomeNavigator");
-    } catch (error) {
-      console.log("Login failed: " + error);
-      if (error.code === "auth/invalid-email") {
-        alert("The email address is not valid.");
-      } else if (error.code === "auth/weak-password") {
-        alert("The password must be 6 characters long or more.");
-      } else if (error.code === "auth/user-not-found") {
-        alert(
-          "Email not found. Please check your email or register a new account."
-        );
-      } else {
-        alert("Register failed! 🥲");
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const { login, isLoading } = useAuth();
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
   return (
     <>
@@ -68,7 +42,9 @@ const LoginScreen = () => {
               icon={"lock-closed"}
               placeholder={"Password"}
               onChangeText={(password) => setPassword(password)}
-              secureTextEntry={true}
+              isPasswordField={true}
+              secureTextEntry={!isPasswordVisible}
+              toggleVisibility={() => setIsPasswordVisible(!isPasswordVisible)}
             />
           </View>
 
@@ -76,7 +52,7 @@ const LoginScreen = () => {
             text={"Login"}
             color={COLORS.white}
             backgroundColor={COLORS.logo}
-            handlePress={() => loginUser(email, password)}
+            handlePress={() => login(email, password)}
           />
 
           <View

@@ -16,14 +16,8 @@ const IntroSlider = () => {
     setIsLastSlide(index === slides.length - 1);
   }, []);
 
-  const onDone = useCallback(() => {
-    navigation.navigate("Auth");
-  }, [navigation]);
-
   const renderItem = useCallback(({ item }) => {
-    return (
-      <SlideItem item={item} />
-    );
+    return <SlideItem item={item} />;
   }, []);
 
   return (
@@ -35,7 +29,8 @@ const IntroSlider = () => {
         <AppIntroSlider
           renderItem={renderItem}
           data={slides}
-          onDone={onDone}
+          showPrevButton={true}
+          showDoneButton={false}
           dotStyle={styles.dot}
           onSlideChange={onSlideChange}
           activeDotStyle={styles.activeDot}
@@ -45,7 +40,7 @@ const IntroSlider = () => {
       {/* <View style={styles.buttonContainer}>
         <Button
           text="I've enabled the widget"
-          handlePress={() => navigation.navigate("Auth")}
+          handlePress={() => navigation.navigate("Login")}
           backgroundColor={isLastSlide ? COLORS.logo : COLORS.gray}
           color={isLastSlide ? COLORS.black : COLORS.darkGray}
         />
