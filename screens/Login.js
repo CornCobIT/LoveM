@@ -22,6 +22,10 @@ const LoginScreen = () => {
   const { login, isLoading } = useAuth();
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
+  const handleLogin = (email, password) => {
+    login(email, password);
+  }
+
   return (
     <>
       <StatusBar></StatusBar>
@@ -52,7 +56,7 @@ const LoginScreen = () => {
             text={"Login"}
             color={COLORS.white}
             backgroundColor={COLORS.logo}
-            handlePress={() => login(email, password)}
+            handlePress={() => handleLogin(email, password)}
           />
 
           <View

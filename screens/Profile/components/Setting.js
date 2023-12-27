@@ -1,8 +1,6 @@
 import React, { useCallback } from "react";
 import { View, Text, TouchableOpacity, Alert } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
-import { useNavigation } from "@react-navigation/native";
-import { firebase } from "../../../config";
 import { useAuth } from "../../../context/AuthContext";
 import { COLORS } from "../../../theme/style";
 
@@ -15,9 +13,8 @@ const iconColor = (icon) => {
   }
 };
 
-const Setting = ({ header, items }) => {
-  const navigation = useNavigation();
-  const { updateUser, logout } = useAuth();
+const Setting = ({ header, items, navigation }) => {
+  const { updateUser, logout, deleteUser } = useAuth();
   
   const handlePress = useCallback((id) => {
     if (id === "widget") {
@@ -42,23 +39,6 @@ const Setting = ({ header, items }) => {
         { cancelable: false }
       );
     } else if (id === "delete") {
-      handleDeleteAccount();
-    }
-  }, []);
-
-  const handleLogout = async () => {
-    try {
-      logout();
-      updateUser(null); 
-      navigation.navigate("Auth");
-    } catch (error) {
-      console.error("Error logging out: ", error);
-    }
-  };
-
-  const handleDeleteAccount = async () => {
-    try {
-      // Hiển thị thông báo xác nhận xóa tài khoản
       Alert.alert(
         "Confirmation",
         "Are you sure you want to delete your account?",
@@ -69,27 +49,32 @@ const Setting = ({ header, items }) => {
           },
           {
             text: "Delete",
-            onPress: async () => {
-              // Thực hiện xóa tài khoản từ Firebase
-              const user = firebase.auth().currentUser;
-              if (user) {
-                deleteUser(user)
-                  .then(() => {
-                    console.log("User deleted successfully!");
-                    updateUserProfile(null);
-                  })
-                  .catch((error) => {
-                    console.error("Error deleting user: ", error);
-                  });
-              }
-            },
+            onPress: handleDeleteUser,
             style: "destructive",
           },
         ],
         { cancelable: false }
       );
+    
+    }
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      navigation();
+      logout();
     } catch (error) {
-      console.error("Error deleting account: ", error);
+      console.log("Error logging out: ", error);
+    }
+  };
+  
+  const handleDeleteUser = async () => {
+    try {
+      logout();
+      navigation();
+      deleteUser();
+    } catch (error) {
+      console.error("Error delete: ", error);
     }
   };
 
