@@ -14,32 +14,29 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [initializing, setInitializing] = useState(true);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       if (user) {
+        setUser(user);
         fetchUserProfile();
       } else {
         setUser(null);
       }
-      // kiểm tra xem Firebase Auth có đang trong quá trình khởi tạo hay không
-      setInitializing(false);
     });
-
     return () => unsubscribe;
   }, []);
 
   const fetchUserProfile = useCallback(async () => {
+    setIsLoading(true);
     try {
-      setIsLoading(true);
       const userId = auth.currentUser.uid;
       const userRef = firestore.doc(`users/${userId}`);
       const docSnap = await userRef.get();
 
       if (docSnap.exists) {
         const userData = docSnap.data();
-        setUser(userData);
+        setUser({ uid: userId, ...userData });
       } else {
         console.log("No such document!");
       }
@@ -107,7 +104,6 @@ export const AuthProvider = ({ children }) => {
         avatar: defaultAvatar,
       });
       Alert.alert("Register successfully! ", "Verification email sent");
-      navigation.navigate("Login");
     } catch (error) {
       console.log("Register failed: " + error);
       // Xử lý lỗi
@@ -125,6 +121,20 @@ export const AuthProvider = ({ children }) => {
       console.log("User logged out");
     } catch (error) {
       console.error("Error logout", error);
+    }
+  }, []);
+
+  const deleteUser = useCallback(async () => {
+    try {
+      if (user) {
+        const userRef = firestore.doc(`users/${auth.currentUser.uid}`);
+        await userRef.delete();
+        console.log("User deleted successfully!");
+      } else {
+        console.log("No user is currently signed in.");
+      }
+    } catch (error) {
+      console.error("Error: ", error);
     }
   }, []);
 
@@ -218,7 +228,6 @@ export const AuthProvider = ({ children }) => {
     [updateUser]
   );
 
-
   return (
     <AuthContext.Provider
       value={{
@@ -228,10 +237,10 @@ export const AuthProvider = ({ children }) => {
         register,
         logout,
         updateUser,
-        initializing,
         uploadAvatar,
         uploadImage,
         updateUserEmail,
+        deleteUser,
       }}
     >
       {children}

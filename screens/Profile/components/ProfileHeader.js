@@ -7,19 +7,20 @@ import {
   StyleSheet,
   ToastAndroid,
 } from "react-native";
+import { getFirestore, doc, updateDoc } from "firebase/firestore";
+import { auth } from "../../../config";
 import Icon from "react-native-vector-icons/Ionicons";
 import { useActionSheet } from "@expo/react-native-action-sheet";
 import * as ImagePicker from "expo-image-picker";
 
 import { COLORS, STYLES } from "../../../theme/style";
 import HeaderLeft from "../../../components/HeaderLeft";
-import { firebase } from "../../../config";
 import { useAuth } from "../../../context/AuthContext";
 
 export default function ProfileHeader({ navigation }) {
   const { showActionSheetWithOptions } = useActionSheet();
   const [image, setImage] = useState(null);
-  const { user, updateUserAvatar, uploadAvatar } = useAuth();
+  const { user, updateUser, uploadAvatar } = useAuth();
   const [firstName, setFirstName] = useState(user?.firstName || "");
   const [lastName, setLastName] = useState(user?.lastName || "");
 
@@ -48,20 +49,16 @@ export default function ProfileHeader({ navigation }) {
 
   const updateProfilePicture = async (result) => {
     if (result.canceled) return;
-  
     try {
       const asset = result.assets[0];
       const uri = asset.uri;
-  
       const downloadURL = await uploadAvatar(uri);
-  
-      const userRef = doc(firestore, "users", auth.currentUser.uid);
+      const db = getFirestore();
+      const userRef = doc(db, "users", auth.currentUser.uid);
       await updateDoc(userRef, { photoURL: downloadURL });
-  
-      updateUserAvatar({
+      updateUser({
         avatar: downloadURL,
       });
-  
       setImage(downloadURL);
       navigation.navigate('ProfileScreen');
     } catch (error) {
