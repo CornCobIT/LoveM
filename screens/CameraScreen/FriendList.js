@@ -1,132 +1,172 @@
+import React, { useState, useEffect } from "react";
 import {
+  ScrollView,
   StyleSheet,
   Text,
   View,
   Image,
-  ScrollView,
+  TextInput,
   TouchableOpacity,
 } from "react-native";
-import React from "react";
 import HeaderLeft from "../../components/HeaderLeft";
 import { COLORS, STYLES } from "../../theme/style";
 import Icon from "react-native-vector-icons/Ionicons";
-import InputField from "../../components/InputField";
+import { useFriend } from "../../context/FriendContext";
+import AddCard from "../../components/AddCard";
+import { useAuth } from "../../context/AuthContext";
+import RequestCard from "../../components/RequestCard";
+import FriendCard from "../../components/FriendCard";
 
 export default function FriendList({ navigation }) {
+  const { searchUsers, getFriendList, getSentFriendRequests } = useFriend();
+  const { user } = useAuth();
+  const [searchKeyword, setSearchKeyword] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [friendList, setFriendList] = useState([]);
+  const [friendRequests, setFriendRequests] = useState([]);
+
+  useEffect(() => {
+    const fetchSearchResults = async () => {
+      if (searchKeyword !== "") {
+        const results = await searchUsers(searchKeyword);
+        setSearchResults(results); // Update search results
+      } else {
+        setSearchResults([]); // Clear search results if searchKeyword is empty
+      }
+    };
+    fetchSearchResults();
+  }, [searchKeyword, searchUsers, user]);
+
+  useEffect(() => {
+    const fetchFriendList = async () => {
+      try {
+        const friends = await getFriendList();
+        setFriendList(friends);
+      } catch (error) {
+        console.error("Error fetching friend list:", error);
+      }
+    };
+
+    const fetchSentRequests = async () => {
+      try {
+        const sentRequests = await getSentFriendRequests();
+        setFriendRequests(sentRequests);
+      } catch (error) {
+        console.error("Error fetching sent friend requests:", error);
+      }
+    };
+
+    fetchFriendList();
+    fetchSentRequests();
+  }, [getFriendList, getSentFriendRequests]);
+
+  const handleSearch = async (query) => {
+    setSearchKeyword(query);
+    if (query !== "") {
+      try {
+        const results = await searchUsers(query);
+        setSearchResults(results);
+      } catch (error) {
+        console.error("Error searching users:", error);
+      }
+    } else {
+      setSearchResults([]);
+    }
+  };
+
   return (
     <ScrollView style={[STYLES.container, styles.container]}>
       <HeaderLeft
         icon={"arrow-back"}
         name={"Friend List"}
-        handlePress={() => navigation.goBack()}
+        handlePress={() => navigation.navigate("Home")}
       />
       <View style={[STYLES.center, styles.headingContainer]}>
         <Text style={STYLES.header}>Your Friends</Text>
         <Text style={[STYLES.title, { paddingVertical: 5 }]}>
-          $1 out of 20 friends added
+          {`${friendList.length} out of 20 friends added`}
         </Text>
         <View style={styles.searchContainer}>
-          <InputField icon={"search"} placeholder={"Add a new friend"} />
+          <View style={[styles.inputSection, styles.inputSectionBlurred]}>
+            <View style={styles.borderText}>
+              <Icon
+                name="search"
+                style={styles.iconBlurred}
+                size={20}
+                color={COLORS.gray}
+              />
+              <TextInput
+                placeholder="Add a new friend"
+                clearButtonMode="always"
+                placeholderTextColor={COLORS.gray}
+                autoCapitalize="none"
+                autoCorrect={false}
+                style={styles.input}
+                onChangeText={(text) => handleSearch(text)}
+                value={searchKeyword}
+              />
+              {searchKeyword !== "" ? (
+                <TouchableOpacity onPress={() => handleSearch("")}>
+                  <Icon
+                    name="close"
+                    size={20}
+                    color={COLORS.gray}
+                    style={styles.iconBlurred}
+                  />
+                </TouchableOpacity>
+              ) : (
+                <View />
+              )}
+            </View>
+          </View>
         </View>
       </View>
+      {/* Hiển thị kết quả tìm kiếm */}
+      {searchKeyword !== "" && (
+        <View style={styles.friendContainer}>
+          <Text style={styles.sectionHeaderText}>Search Results:</Text>
+          {searchResults.length > 0 ? (
+            searchResults.map((friend) => (
+              <AddCard key={friend.id} friend={friend} />
+            ))
+          ) : (
+            <Text style={styles.sectionHeaderText}>No results</Text>
+          )}
+        </View>
+      )}
 
-      <View style={styles.friendContainer}>
+      <View style={styles.searchContainer}>
+        <View style={styles.sectionHeader}>
+          <Icon
+            name="people"
+            color={COLORS.white}
+            size={20}
+            style={{ paddingRight: 5 }}
+          />
+          <Text style={styles.sectionHeaderText}>Your friends</Text>
+        </View>
+        {/* Hiển thị danh sách bạn bè */}
         <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Icon
-              name="person-add"
-              size={20}
-              color={COLORS.white}
-              style={styles.sectionIcon}
-            />
-            <Text style={styles.sectionHeaderText}>
-              Find friends from QR code
-            </Text>
-          </View>
-          <View style={styles.sectionBody}>
-            <View style={styles.qrCode}>
-              <TouchableOpacity style={styles.findOutline}>
-                <Image
-                  source={require("../../assets/qr-code.png")}
-                  style={styles.findLogo}
-                />
-              </TouchableOpacity>
-              <Text style={styles.findName}>Show QR Code</Text>
+          {friendList.length > 0 ? (
+            <View>
+              {friendList.map((friend) => (
+                <FriendCard friend={friend} key={friend.id} />
+              ))}
             </View>
-          </View>
+          ) : (
+            <View style={{ paddingHorizontal: 30, paddingTop: 10 }}>
+              <Text style={styles.sectionHeaderText}>{"No friends 🥲"}</Text>
+            </View>
+          )}
+          {/* Hiển thị danh sách yêu cầu kết bạn */}
+          {friendRequests.length > 0 && (
+            <View>
+              {friendRequests.map((friend) => (
+                <RequestCard key={friend.id} friend={friend} />
+              ))}
+            </View>
+          )}
         </View>
-
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Icon
-              name="people"
-              size={20}
-              color={COLORS.white}
-              style={styles.sectionIcon}
-            />
-            <Text style={styles.sectionHeaderText}>Your Friends</Text>
-          </View>
-          <View style={styles.sectionBody}>
-            <View style={styles.friend}>
-              <TouchableOpacity style={{flexDirection: "row", alignItems: "center"}} >
-                <View style={styles.friendOutline}>
-                  <Image
-                    source={require("../../assets/qr-code.png")}
-                    style={styles.friendAvt}
-                  />
-                </View>
-                <Text style={styles.friendName}>Friend 1</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.deleteIcon} onPress={() => {}}>
-                <Icon name="close" size={20} color={COLORS.white} />
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.friend}>
-              <TouchableOpacity style={{flexDirection: "row", alignItems: "center"}} >
-                <View style={styles.friendOutline}>
-                  <Image
-                    source={require("../../assets/qr-code.png")}
-                    style={styles.friendAvt}
-                  />
-                </View>
-                <Text style={styles.friendName}>Friend 1</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.deleteIcon} onPress={() => {}}>
-                <Icon name="close" size={20} color={COLORS.white} />
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-
-        {/* Suggestions by phone number */}
-        {/* <View style={STYLES.section}>
-          <View style={STYLES.sectionHeader}>
-            <Image
-              source={require('../../assets/icons/star.png')}
-              style={[STYLES.sectionIcon, { width: 20, height: 20, marginRight: 12, }]}
-            />
-            <Text style={STYLES.sectionHeaderText}>Suggestions</Text>
-          </View>
-          <View style={styles.sectionBody}>
-            <View style={styles.friend}>
-              <TouchableOpacity style={{flexDirection: "row", alignItems: "center"}} >
-                <View style={styles.friendOutline}>
-                  <Image
-                    source={require("../../assets/qr-code.png")}
-                    style={styles.friendAvt}
-                  />
-                </View>
-                <Text style={styles.friendName}>Friend 1</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.addIcon} onPress={() => {}}>
-                <Image source={require('../../assets/icons/plus.png')} style={styles.icon} />
-                <Text style={styles.iconText}>Add</Text>
-              </TouchableOpacity>
-            </View>
-
-          </View>
-        </View> */}
       </View>
     </ScrollView>
   );
@@ -139,6 +179,32 @@ const styles = StyleSheet.create({
   headingContainer: {
     paddingTop: 30,
     paddingBottom: 20,
+  },
+  inputSection: {
+    marginBottom: 20,
+    borderWidth: 1.5,
+    borderRadius: 20,
+    flexDirection: "row",
+    backgroundColor: COLORS.white,
+  },
+  inputSectionBlurred: {
+    borderColor: COLORS.gray,
+    color: COLORS.gray,
+  },
+  iconBlurred: {
+    marginRight: 15,
+  },
+  borderText: {
+    flexDirection: "row",
+    width: "100%",
+    height: 57,
+    borderRadius: 40,
+    alignItems: "center",
+    paddingLeft: 20,
+  },
+  input: {
+    flex: 1,
+    fontSize: 16,
   },
   searchContainer: {
     paddingHorizontal: 24,
@@ -181,8 +247,6 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.lightBlack,
   },
   sectionHeader: {
-    paddingHorizontal: 24,
-    paddingVertical: 12,
     flexDirection: "row",
     alignItems: "center",
   },
@@ -192,6 +256,7 @@ const styles = StyleSheet.create({
     color: COLORS.white,
     textTransform: "uppercase",
     letterSpacing: 1.2,
+    paddingBottom: 8,
   },
   sectionIcon: { paddingRight: 15, color: COLORS.white },
   friend: {
@@ -199,6 +264,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     marginBottom: 25,
+  },
+  friendContainer: {
+    paddingHorizontal: 20,
   },
   friendOutline: {
     alignItems: "center",
@@ -224,8 +292,8 @@ const styles = StyleSheet.create({
   deleteIcon: {
     backgroundColor: COLORS.gray,
     borderRadius: 9999,
-    height: 35,
-    width: 35,
+    height: 40,
+    width: 40,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -237,6 +305,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     flexDirection: "row",
     paddingHorizontal: 12,
+    marginRight: 5,
   },
   icon: {
     width: 12,
@@ -246,5 +315,5 @@ const styles = StyleSheet.create({
   iconText: {
     fontWeight: "bold",
     fontSize: 18,
-  }
+  },
 });

@@ -18,7 +18,7 @@ export default function ProfileScreen() {
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <ProfileHeader navigation={navigation} />
         {SECTIONS.map(({ header, items }, index) => (
-          <Setting key={index.toString()} header={header} items={items} navigation={goToLogin}/>
+          <Setting key={index.toString()} header={header} items={items} navigation={navigation}/>
         ))}
       </ScrollView>
     </View>

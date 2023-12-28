@@ -6,6 +6,8 @@ import * as Contacts from "expo-contacts";
 import Loading from "./components/Loading";
 import MainNavigator from "./navigation/MainNavigator";
 import { AuthProvider } from "./context/AuthContext";
+import { StartProvider } from "./context/StartContext";
+import { FriendProvider } from "./context/FriendContext";
 
 const fetchFonts = {
   Playfair: require("./assets/fonts/PlayfairDisplay.ttf"),
@@ -33,7 +35,11 @@ const App = () => {
   } else {
     return (
       <AuthProvider>
-        <MainNavigator />
+        <FriendProvider>
+          <StartProvider>
+            <MainNavigator />
+          </StartProvider>
+        </FriendProvider>
       </AuthProvider>
     );
   }

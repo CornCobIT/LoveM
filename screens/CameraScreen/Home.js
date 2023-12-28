@@ -5,7 +5,7 @@ import {
   Image,
   TouchableOpacity,
   StatusBar,
-  Alert,
+  TouchableWithoutFeedback,
   FlatList,
   TextInput,
 } from "react-native";
@@ -18,16 +18,14 @@ import { useNavigation } from "@react-navigation/native";
 import { useAuth } from "../../context/AuthContext";
 import { COLORS, STYLES } from "../../theme/style";
 import Loading from "../../components/Loading";
+import { useFriend } from "../../context/FriendContext";
 
 export default function HomeScreen() {
-  const [friendList, setFriendList] = useState([
-    { id: "1", name: "Alice" },
-    { id: "2", name: "Bob" },
-    { id: "3", name: "Charlie" },
-    // Thêm các thông tin bạn bè khác nếu cần
-  ]);
-  const { user, uploadImage } = useAuth();
   const navigation = useNavigation();
+  const cameraRef = useRef(null);
+  const { getFriendList } = useFriend();
+  const { uploadImage } = useAuth();
+  const [friendList, setFriendList] = useState([]);
   const [isLoading, setLoading] = useState(false);
   const [showFriendList, setShowFriendList] = useState(false);
   const [hasCameraPermission, setHasCameraPermission] = useState(null);
@@ -37,8 +35,6 @@ export default function HomeScreen() {
   const [type, setType] = useState(Camera.Constants.Type.back);
   const [flash, setFlash] = useState(Camera.Constants.FlashMode.off);
   const [ratio, setRatio] = useState("1:1");
-  const cameraRef = useRef(null);
-
   const [cameraKey, setCameraKey] = useState(0);
 
   const resetCamera = () => {
@@ -60,10 +56,25 @@ export default function HomeScreen() {
     })();
   }, []);
 
+  useEffect(() => {
+    const fetchFriendList = async () => {
+      try {
+        const friends = await getFriendList();
+        setFriendList(friends);
+      } catch (error) {
+        console.error("Error fetching friend list:", error);
+      }
+    };
+    fetchFriendList();
+  }, [getFriendList]);
+
   const toggleFriendList = () => {
     setShowFriendList(!showFriendList);
-    // Ví dụ: gọi hàm để lấy danh sách bạn bè từ API hoặc hiển thị một Modal chứa danh sách bạn bè
   };
+
+  const handlePressOutsideFriendList = () => {
+    setShowFriendList(false);
+  };  
 
   const sendPicture = async () => {
     if (!image) {
@@ -81,7 +92,7 @@ export default function HomeScreen() {
         setLoading(false);
       }
     }
-  };  
+  };
 
   const takePicture = async () => {
     if (cameraRef && hasCameraPermission) {
@@ -170,13 +181,23 @@ export default function HomeScreen() {
               />
             </TouchableOpacity>
           </View>
+
           {showFriendList && (
-            <FlatList
+            <TouchableWithoutFeedback onPress={handlePressOutsideFriendList}>
+              <FlatList
               data={friendList}
               renderItem={({ item }) => (
                 <View style={styles.friendListContainer}>
-                  <Image style={{ height: 30, width: 30, borderRadius: 9999, marginRight: 10,}} source={require('../../assets/qr-code.png')} />
-                  <Text style={styles.buttonText}>{item.name}</Text>
+                  <Image
+                    style={{
+                      height: 30,
+                      width: 30,
+                      borderRadius: 9999,
+                      marginRight: 10,
+                    }}
+                    source={{ uri: item.friend.avatar }}
+                  />
+                  <Text style={styles.buttonText}>{item.friend.name}</Text>
                 </View>
               )}
               keyExtractor={(item) => item.id}
@@ -192,6 +213,7 @@ export default function HomeScreen() {
                 elevation: 5,
               }}
             />
+            </TouchableWithoutFeedback>
           )}
 
           {!image ? (
@@ -300,7 +322,9 @@ export default function HomeScreen() {
           )}
         </View>
         <View style={styles.buttonContainer}>
-          <TouchableOpacity onPress={() => navigation.navigate("DisplayScreen")}>
+          <TouchableOpacity
+            onPress={() => navigation.navigate("DisplayScreen")}
+          >
             <Icon style={styles.icon} name="caret-down" size={40} />
           </TouchableOpacity>
         </View>
