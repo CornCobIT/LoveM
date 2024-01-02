@@ -6,7 +6,7 @@ import { useNavigation } from '@react-navigation/native';
 // import 'firebase/storage';
 
 import { storage } from '../../config';
-import {STYLES, COLORS} from '../../theme/style';
+import { STYLES, COLORS } from '../../theme/style';
 
 const ImageList = () => {
   const [imageUrls, setImageUrls] = useState([]);
@@ -32,41 +32,10 @@ const ImageList = () => {
     fetchImageUrls();
   }, []);
 
-  // useEffect(() => {
-  //   // Retrieve image URLs from Firebase Storage
-  //   const fetchImageUrls = async () => {
-  //     const storageRef = storage.ref();
-  //     const imagesRef = storageRef.child('images');
-  
-  //     const imageList = await imagesRef.listAll();
-  
-  //     // Create an array of promises to fetch download URLs and creation timestamps
-  //     const urlPromises = imageList.items.map(async (item) => {
-  //       const url = await item.getDownloadURL();
-  //       const metadata = await item.getMetadata();
-  //       return { url, timestamp: metadata.timestamp };
-  //     });
-  
-  //     // Wait for all promises to resolve
-  //     const urls = await Promise.all(urlPromises);
-  
-  //     // Get the current timestamp
-  //     const currentTime = Date.now();
-  
-  //     // Sort the URLs based on the time difference from the current time in ascending order
-  //     urls.sort((a, b) => Math.abs(a.timestamp - currentTime) - Math.abs(b.timestamp - currentTime));
-  
-  //     // Extract the URLs from the sorted array
-  //     const sortedUrls = urls.map((item) => item.url);
-  
-  //     setImageUrls(sortedUrls);
-  //   };
-  
-  //   fetchImageUrls();
-  // }, []);
-
   const renderItem = ({ item }) => (
-    <Image source={{ uri: item }} style={styles.image} />
+    <TouchableOpacity onPress={() => navigation.navigate('DisplayScreen', {imageUrls: item})}>
+      <Image source={{ uri: item }} style={styles.image} />
+    </TouchableOpacity>
   );
 
   return (
@@ -86,7 +55,7 @@ const ImageList = () => {
         </TouchableOpacity>
       </View>
       <FlatList
-        data={imageUrls}
+        data={imageUrls.reverse()}
         renderItem={renderItem}
         keyExtractor={(item) => item}
         numColumns={3}

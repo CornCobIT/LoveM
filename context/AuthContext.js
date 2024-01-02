@@ -161,14 +161,12 @@ export const AuthProvider = ({ children }) => {
         const response = await fetch(imageUri);
         const blob = await response.blob();
         const filename = `images/image-${Date.now()}`;
-        let id = 0;
 
         // Tạo metadata với thông tin người dùng và caption
         const metadata = {
           contentType: "image/jpeg",
           customMetadata: {
-            imgid: id + 1,
-            userId: user.id,
+            userId: user.uid,
             userName: `${user.firstName} ${user.lastName}`,
             timestamp: Date.now().toString(),
             caption: caption, // Thêm caption vào metadata
@@ -180,8 +178,7 @@ export const AuthProvider = ({ children }) => {
         await ref.put(blob, metadata);
 
         const downloadURL = await ref.getDownloadURL();
-
-
+        
         return downloadURL;
       } catch (error) {
         console.error("Error uploading image:", error);

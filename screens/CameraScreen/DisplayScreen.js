@@ -58,7 +58,17 @@ export default function DisplayScreen() {
     };
 
     const deletePhoto = () => {
-        Alert.alert('Photo Deleted', 'The photo has been deleted successfully.');
+        const storageRef = storage.ref();
+        const imagesRef = storageRef.ref(storageRef.fullPath);
+
+        imagesRef
+            .delete()
+            .then(() => {
+                console.log('Delete Photo Successfully!');
+            })
+            .catch((e) => {
+                console.log('Error white deleting photo.', e);
+            });
     };
 
     const onDownloadPhoto = () => {
@@ -81,7 +91,7 @@ export default function DisplayScreen() {
         }
 
         try {
-            await MediaLibrary.createAssetAsync(imageUrl);
+            await MediaLibrary.createAssetAsync(item.url);
             alert("Downloaded successfully! 🎉");
         } catch (e) {
             console.log(e);
@@ -108,12 +118,36 @@ export default function DisplayScreen() {
         }
     };
 
+    // useEffect(() => {
+    //     // Retrieve image URLs from Firebase Storage
+    //     const fetchImageUrls = async () => {
+    //         const storageRef = storage.ref();
+    //         const imagesRef = storageRef.child('images');
+
+    //         const imageList = await imagesRef.listAll();
+    //         const urls = await Promise.all(
+    //             imageList.items.map(async (item) => {
+    //                 const url = await item.getDownloadURL();
+    //                 const metadata = await item.getMetadata();
+    //                 const caption = metadata.customMetadata.caption;
+    //                 const name = metadata.customMetadata.userName;
+    //                 const id = metadata.customMetadata.userId;
+
+    //                 return { url, caption, name, id };
+    //             })
+    //         );
+    //         setImageUrl(urls);
+    //     };
+
+    //     fetchImageUrls();
+    // }, [user.uid]);
+
     useEffect(() => {
         // Retrieve image URLs from Firebase Storage
         const fetchImageUrls = async () => {
             const storageRef = storage.ref();
             const imagesRef = storageRef.child('images');
-
+    
             const imageList = await imagesRef.listAll();
             const urls = await Promise.all(
                 imageList.items.map(async (item) => {
@@ -122,23 +156,23 @@ export default function DisplayScreen() {
                     const caption = metadata.customMetadata.caption;
                     const name = metadata.customMetadata.userName;
                     const id = metadata.customMetadata.userId;
-                    // Check if the image belongs to the user or their friends
-                    if (id === user.userId || FriendList.includes(id)) {
-                        return { url, caption, name };
-                    } else {
-                        return null; // Exclude images that don't belong to the user or their friends
-                    }
+                    const timestamp = metadata.timeCreated; // Assuming there's a timestamp property in the metadata indicating when the image was uploaded
+    
+                    return { url, caption, name, id, timestamp };
                 })
             );
-            // setImageUrl(urls);
-            // Filter out null values
-            const filteredUrls = urls.filter((item) => item !== null);
-            setImageUrl(filteredUrls);
-
+    
+            // Sort the URLs array based on the timestamp in descending order
+            const sortedUrls = urls.sort((a, b) => b.timestamp - a.timestamp);
+    
+            setImageUrl(sortedUrls);
         };
-
+    
         fetchImageUrls();
-    }, [user.userId, FriendList]);
+    }, [user.uid]);
+
+    const reverseUrl = imageUrl.reverse();
+
 
     const renderItem = (item, index) => {
         if (!item.caption) {
@@ -183,7 +217,7 @@ export default function DisplayScreen() {
             </View>
 
             <Swiper showsPagination={false} loop={false} horizontal={false}>
-                {imageUrl.map((item, index) => renderItem(item, index))}
+                {reverseUrl.map((item, index) => renderItem(item, index))}
             </Swiper>
 
             <View style={styles.interaction}>
