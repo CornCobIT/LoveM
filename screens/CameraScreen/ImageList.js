@@ -1,154 +1,131 @@
-// Example of Grid Image Gallery in React Native
-// https://aboutreact.com/grid-image-gallery/
+import React, { useEffect, useState } from 'react';
+import { View, Image, FlatList, StyleSheet, SafeAreaView, TouchableOpacity, Text } from 'react-native';
+import Icon from "react-native-vector-icons/Ionicons";
+import { useNavigation } from '@react-navigation/native';
+// import firebase from 'firebase/app';
+// import 'firebase/storage';
 
-// import React in our code
-import React, {useState, useEffect} from 'react';
+import { storage } from '../../config';
+import {STYLES, COLORS} from '../../theme/style';
 
-// import all the components we are going to use
-import {
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  View,
-  TouchableOpacity,
-  FlatList,
-  Modal,
-} from 'react-native';
-
-//import FastImage
-import FastImage from 'react-native-fast-image';
-
-const App = () => {
-  const [imageuri, setImageuri] = useState('');
-  const [
-    modalVisibleStatus, setModalVisibleStatus
-  ] = useState(false);
-  const [dataSource, setDataSource] = useState([]);
+const ImageList = () => {
+  const [imageUrls, setImageUrls] = useState([]);
+  const navigation = useNavigation();
 
   useEffect(() => {
-    let items = Array.apply(null, Array(120)).map((v, i) => {
-      return {
-        id: i,
-        src: 'https://unsplash.it/400/400?image=' + (i + 1)
-      };
-    });
-    setDataSource(items);
+    // Retrieve image URLs from Firebase Storage
+    const fetchImageUrls = async () => {
+      const storageRef = storage.ref();
+      const imagesRef = storageRef.child('images');
+
+      const imageList = await imagesRef.listAll();
+      const urls = await Promise.all(
+        imageList.items.map(async (item) => {
+          const url = await item.getDownloadURL();
+          return url;
+        })
+      );
+
+      setImageUrls(urls);
+    };
+
+    fetchImageUrls();
   }, []);
 
-  const showModalFunction = (visible, imageURL) => {
-    //handler to handle the click on image of Grid
-    //and close button on modal
-    setImageuri(imageURL);
-    setModalVisibleStatus(visible);
-  };
+  // useEffect(() => {
+  //   // Retrieve image URLs from Firebase Storage
+  //   const fetchImageUrls = async () => {
+  //     const storageRef = storage.ref();
+  //     const imagesRef = storageRef.child('images');
+  
+  //     const imageList = await imagesRef.listAll();
+  
+  //     // Create an array of promises to fetch download URLs and creation timestamps
+  //     const urlPromises = imageList.items.map(async (item) => {
+  //       const url = await item.getDownloadURL();
+  //       const metadata = await item.getMetadata();
+  //       return { url, timestamp: metadata.timestamp };
+  //     });
+  
+  //     // Wait for all promises to resolve
+  //     const urls = await Promise.all(urlPromises);
+  
+  //     // Get the current timestamp
+  //     const currentTime = Date.now();
+  
+  //     // Sort the URLs based on the time difference from the current time in ascending order
+  //     urls.sort((a, b) => Math.abs(a.timestamp - currentTime) - Math.abs(b.timestamp - currentTime));
+  
+  //     // Extract the URLs from the sorted array
+  //     const sortedUrls = urls.map((item) => item.url);
+  
+  //     setImageUrls(sortedUrls);
+  //   };
+  
+  //   fetchImageUrls();
+  // }, []);
+
+  const renderItem = ({ item }) => (
+    <Image source={{ uri: item }} style={styles.image} />
+  );
 
   return (
-    <SafeAreaView style={styles.container}>
-      {modalVisibleStatus ? (
-        <Modal
-          transparent={false}
-          animationType={'fade'}
-          visible={modalVisibleStatus}
-          onRequestClose={() => {
-            showModalFunction(!modalVisibleStatus, '');
-          }}>
-          <View style={styles.modelStyle}>
-            <FastImage
-              style={styles.fullImageStyle}
-              source={{uri: imageuri}}
-              resizeMode={
-                FastImage.resizeMode.contain
-              }
-            />
-            <TouchableOpacity
-              activeOpacity={0.5}
-              style={styles.closeButtonStyle}
-              onPress={() => {
-                showModalFunction(!modalVisibleStatus, '');
-              }}>
-              <FastImage
-                source={{
-                  uri:
-                    'https://raw.githubusercontent.com/AboutReact/sampleresource/master/close.png',
-                }}
-                style={{width: 35, height: 35}}
-              />
-            </TouchableOpacity>
-          </View>
-        </Modal>
-      ) : (
-        <View style={styles.container}>
-          <Text style={styles.titleStyle}>
-            Grid Image Gallery in React Native
-          </Text>
-          <FlatList
-            data={dataSource}
-            renderItem={({item}) => (
-              <View style={styles.imageContainerStyle}>
-                <TouchableOpacity
-                  key={item.id}
-                  style={{flex: 1}}
-                  onPress={() => {
-                    showModalFunction(true, item.src);
-                  }}>
-                  <FastImage
-                    style={styles.imageStyle}
-                    source={{
-                      uri: item.src,
-                    }}
-                  />
-                </TouchableOpacity>
-              </View>
-            )}
-            //Setting the number of column
-            numColumns={3}
-            keyExtractor={(item, index) => index.toString()}
-          />
-        </View>
-      )}
+    <SafeAreaView style={[
+      STYLES.container,
+      { justifyContent: "center", position: "relative", padding: 10, },
+    ]}>
+      <View style={[styles.header, { marginTop: 30, alignItems: 'center' }]}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Icon name='caret-up' size={40} color={'white'} />
+        </TouchableOpacity>
+        <TouchableOpacity
+          // onPress={toggleFriendList}
+          style={styles.toggleButton}
+        >
+          <Text style={STYLES.title}>Friends</Text>
+        </TouchableOpacity>
+      </View>
+      <FlatList
+        data={imageUrls}
+        renderItem={renderItem}
+        keyExtractor={(item) => item}
+        numColumns={3}
+        style={styles.flatList}
+      />
     </SafeAreaView>
   );
 };
-export default App;
+
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  titleStyle: {
-    padding: 16,
-    fontSize: 20,
-    color: 'white',
-    backgroundColor: 'green',
-  },
-  imageContainerStyle: {
-    flex: 1,
-    flexDirection: 'column',
-    margin: 1,
-  },
-  imageStyle: {
+  image: {
+    width: 120,
     height: 120,
-    width: '100%',
+    margin: 1,
+    borderColor: COLORS.white,
+    borderWidth: 0.5,
+    borderRadius: 5,
   },
-  fullImageStyle: {
+  header: {
+    flexDirection: 'row',
+  },
+  toggleButton: {
+    backgroundColor: COLORS.darkGray,
+    paddingHorizontal: 30,
+    paddingVertical: 10,
+    borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
-    height: '100%',
-    width: '98%',
-    resizeMode: 'contain',
+    marginLeft: 80,
   },
-  modelStyle: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.4)',
-  },
-  closeButtonStyle: {
-    width: 25,
-    height: 25,
-    top: 50,
-    right: 20,
-    position: 'absolute',
+  flatList: {
+    marginTop: 20,
   },
 });
+
+export default ImageList;

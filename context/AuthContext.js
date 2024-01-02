@@ -91,11 +91,11 @@ export const AuthProvider = ({ children }) => {
   const register = useCallback(async (email, password, firstName, lastName) => {
     setIsLoading(true);
     try {
-      const defaultAvatar = await storage.ref("avt.jpg").getDownloadURL();
+      const defaultAvatar = await storage.ref('avt.jpg').getDownloadURL();
       await auth.createUserWithEmailAndPassword(email, password);
       await auth.currentUser.sendEmailVerification({
         handleCodeInApp: true,
-        url: "https://lovem-c1e24.firebaseapp.com",
+        url: 'https://project-e086d.firebaseapp.com',
       });
       await firestore.collection("users").doc(auth.currentUser.uid).set({
         firstName,
@@ -161,11 +161,13 @@ export const AuthProvider = ({ children }) => {
         const response = await fetch(imageUri);
         const blob = await response.blob();
         const filename = `images/image-${Date.now()}`;
+        let id = 0;
 
         // Tạo metadata với thông tin người dùng và caption
         const metadata = {
           contentType: "image/jpeg",
           customMetadata: {
+            imgid: id + 1,
             userId: user.id,
             userName: `${user.firstName} ${user.lastName}`,
             timestamp: Date.now().toString(),
@@ -178,6 +180,8 @@ export const AuthProvider = ({ children }) => {
         await ref.put(blob, metadata);
 
         const downloadURL = await ref.getDownloadURL();
+
+
         return downloadURL;
       } catch (error) {
         console.error("Error uploading image:", error);
@@ -185,6 +189,7 @@ export const AuthProvider = ({ children }) => {
     },
     [user]
   );
+
 
   const updateUserEmail = useCallback(
     async (newEmail, password) => {

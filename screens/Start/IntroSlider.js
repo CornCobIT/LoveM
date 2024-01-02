@@ -37,14 +37,14 @@ const IntroSlider = () => {
           ref={sliderRef}
         />
       </View>
-      {/* <View style={styles.buttonContainer}>
+      <View style={styles.buttonContainer}>
         <Button
           text="I've enabled the widget"
           handlePress={() => navigation.navigate("Login")}
           backgroundColor={isLastSlide ? COLORS.logo : COLORS.gray}
           color={isLastSlide ? COLORS.black : COLORS.darkGray}
         />
-      </View> */}
+      </View>
     </View>
   );
 };

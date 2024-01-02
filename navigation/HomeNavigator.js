@@ -5,6 +5,7 @@ import FriendList from "../screens/CameraScreen/FriendList";
 import HomeScreen from "../screens/CameraScreen/Home";
 import ProfileNavigator from "../navigation/ProfileNavigator";
 import DisplayScreen from "../screens/CameraScreen/DisplayScreen";
+import ImageList from "../screens/CameraScreen/ImageList";
 
 const Stack = createStackNavigator();
 
@@ -20,6 +21,11 @@ export default function HomeNavigator() {
       <Stack.Screen
         name="DisplayScreen"
         component={DisplayScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="ImageList"
+        component={ImageList}
         options={{ headerShown: false }}
       />
       <Stack.Screen

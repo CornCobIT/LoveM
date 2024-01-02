@@ -21,9 +21,9 @@ const SECTIONS = [
     header: [{ id: "general", label: "General", iconName: "person" }],
     items: [
       {
-        id: "changeEmail",
-        icon: "mail",
-        label: "Change email address",
+        id: "changePassword",
+        icon: "lock-closed",
+        label: "Change Password",
         type: "link",
       },
       { id: "help", icon: "help-circle", label: "Get help", type: "link" },

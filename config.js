@@ -4,14 +4,14 @@ import "firebase/compat/storage";
 import "firebase/compat/firestore";
 import "firebase/compat/database";
 
+
 const firebaseConfig = {
-  apiKey: "AIzaSyB2QN9CNDbFQcjiloCoZxKNo9otx_vokF8",
-  authDomain: "lovem-c1e24.firebaseapp.com",
-  projectId: "lovem-c1e24",
-  storageBucket: "lovem-c1e24.appspot.com",
-  messagingSenderId: "1011548720063",
-  appId: "1:1011548720063:web:f293d951d36813997faf0a",
-  measurementId: "G-Q8Q9CMTJSL",
+  apiKey: "AIzaSyAtAJYWTddvPSjj_t7vDueZJAu3Jy0e0QE",
+  authDomain: "project-e086d.firebaseapp.com",
+  projectId: "project-e086d",
+  storageBucket: "project-e086d.appspot.com",
+  messagingSenderId: "631947718365",
+  appId: "1:631947718365:web:b6cf5e5d65c7d7bd66b534"
 };
 
 if (!firebase.apps.length) {

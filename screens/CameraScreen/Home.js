@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import React, { useState, useRef, useEffect } from "react";
 import { Camera } from "expo-camera";
-import { firebase } from "../../config";
+import { storage } from "../../config";
 import * as MediaLibrary from "expo-media-library";
 import Icon from "react-native-vector-icons/Ionicons";
 import { useNavigation } from "@react-navigation/native";
@@ -36,6 +36,7 @@ export default function HomeScreen() {
   const [flash, setFlash] = useState(Camera.Constants.FlashMode.off);
   const [ratio, setRatio] = useState("1:1");
   const [cameraKey, setCameraKey] = useState(0);
+
 
   const resetCamera = () => {
     setCameraKey((prevKey) => prevKey + 1);
@@ -128,6 +129,7 @@ export default function HomeScreen() {
       console.log(e);
     }
   };
+
 
   const flipCamera = () => {
     setType(
@@ -415,6 +417,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingTop: 40,
     width: "100%",
+    justifyContent: "center",
+    alignItems: "center",
   },
   iconButton: {
     marginHorizontal: 50,
