@@ -159,15 +159,18 @@ export const FriendProvider = ({ children }) => {
         const friendID = request.data().user1 === currentUser.uid ? request.data().user2 : request.data().user1;
         const friendSnapshot = await usersRef.doc(friendID).get();
         const friendData = friendSnapshot.data();
-        sentRequestsWithUserInfo.push({
-          id: request.id,
-          status: request.data().status,
-          friend: {
-            id: friendSnapshot.id,
-            name: friendData.firstName + " " + friendData.lastName,
-            avatar: friendData.avatar,
-          },
-        });
+  
+        if (friendData && friendData.firstName && friendData.lastName) {
+          sentRequestsWithUserInfo.push({
+            id: request.id,
+            status: request.data().status,
+            friend: {
+              id: friendSnapshot.id,
+              name: friendData.firstName + " " + friendData.lastName,
+              avatar: friendData.avatar,
+            },
+          });
+        }
       }
   
       return sentRequestsWithUserInfo;

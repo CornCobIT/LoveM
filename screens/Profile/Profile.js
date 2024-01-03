@@ -9,16 +9,22 @@ import SECTIONS from "./components/dataSetting";
 
 export default function ProfileScreen() {
   const navigation = useNavigation();
-  const goToLogin = () => {
-    return navigation.navigate('NavigatorName', { screen: 'Auth' });
-  }
+  const handleLogout = async () => {
+    try {
+      navigation.navigate("AuthScreen");
+      logout();
+    } catch (error) {
+      console.log("Error logging out: ", error);
+    }
+  };
+  
   return (
     <ActionSheetProvider>
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <ProfileHeader navigation={navigation} />
         {SECTIONS.map(({ header, items }, index) => (
-          <Setting key={index.toString()} header={header} items={items} navigation={navigation}/>
+          <Setting key={index.toString()} header={header} items={items} navigation={handleLogout}/>
         ))}
       </ScrollView>
     </View>

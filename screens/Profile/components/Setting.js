@@ -32,7 +32,7 @@ const Setting = ({ header, items, navigation }) => {
           },
           {
             text: "Log Out",
-            onPress: handleLogout,
+            onPress: navigation,
             style: "destructive",
           },
         ],
@@ -59,15 +59,7 @@ const Setting = ({ header, items, navigation }) => {
     }
   }, []);
 
-  const handleLogout = async () => {
-    try {
-      navigation();
-      logout();
-    } catch (error) {
-      console.log("Error logging out: ", error);
-    }
-  };
-  
+ 
   const handleDeleteUser = async () => {
     try {
       logout();

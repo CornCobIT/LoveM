@@ -33,7 +33,7 @@ export default function RequestCard({ friend }) {
       <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
         <TouchableOpacity style={styles.acceptIcon} onPress={() => handleAcceptFriendRequest(friend.id)}>
           <Image source={require('../assets/icons/check.png')} style={styles.icon} />
-          <Text style={styles.iconText}>Accept</Text>
+          {/* <Text style={styles.iconText}>Accept</Text> */}
         </TouchableOpacity>
         <TouchableOpacity style={styles.deleteIcon} onPress={() => handleDeleteFriendRequest(friend.id)}>
           <Icon name='close' size={20} color={COLORS.white} />
@@ -85,15 +85,16 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.gray,
     borderRadius: 9999,
     height: 40,
+    width: 40,
     justifyContent: 'center',
     alignItems: 'center',
     flexDirection: 'row',
-    paddingHorizontal: 12,
+    // paddingHorizontal: 12,
   },
   icon: {
-    width: 12,
+    width: 17,
     height: 12,
-    marginRight: 8,
+    // marginRight: 8,
   },
   iconText: {
     fontWeight: 'bold',
